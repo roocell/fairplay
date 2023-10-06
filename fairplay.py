@@ -5,8 +5,12 @@ import os
 # players.txt  - a list of players
 # games.txt - a list of comma separated values game#,player,minutes
 #           - this is a running file of all the minutes played by a player for all games
+# output
+#   dumps the recommended shifts for the next game
+#   games_out.txt - adjusted games file that can be used for the next time
 
 games_file = "games.txt"
+games_out_file = "games_out.txt"
 players_file = "players.txt"
 stronglines_file = "stronglines.txt"
 stronglines_enabled = False
@@ -195,7 +199,7 @@ for shift, group in enumerate(next_game_groups, start=1):
 
 # print out players, minutes, shifts
 print()
-f = open("game_out.txt", "w")
+f = open(games_out_file, "w")
 for p in players:
   print(f"{p.name} {p.minutes_played} {p.shifts}")
   if p.shifts > 3:
