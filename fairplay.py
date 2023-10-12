@@ -20,38 +20,12 @@ class Player:
 
   def __init__(self, name):
     self.name = name
-    self.minutes_played = 0
+    self.minutes = 0
     self.shifts = 0
 
 
 # Read player data from players.txt and store in a list of Player objects
 players = []
-with open(players_file, "r") as f:
-  for l in f:
-    player_name = l.strip()
-    players.append(Player(player_name))
-
-# Read game data from games.txt and tally up the minutes played for each player
-if os.path.exists(games_file):
-  with open(games_file, "r") as f:
-    for line in f:
-      game_data = line.strip().split(",")
-      game_player, minutes_played = game_data[0], int(game_data[1])
-
-      # Find the corresponding player object and update their minutes_played
-      for player in players:
-        if player.name == game_player:
-          player.minutes_played += minutes_played
-else:
-  print("no games input file")
-
-# Sort the players by their total minutes played (from least to most)
-players.sort(key=lambda x: x.minutes_played)
-
-# Print out the total minutes played for each player
-for player in players:
-  print(f"{player.name}: {player.minutes_played} minutes played")
-print("\n\n\n")
 
 
 # return an array of players given an array of player names
@@ -65,24 +39,24 @@ def getplayers(players, pnames):
 
 
 def get_players_sorted(players):
-  # sort the players by minutes_played but shuffle within each group of minutes
+  # sort the players by minutes but shuffle within each group of minutes
 
-  # Sort players by minutes_played in ascending order
-  players.sort(key=lambda x: x.minutes_played)
+  # Sort players by minutes in ascending order
+  players.sort(key=lambda x: x.minutes)
 
-  # Create a list of lists to store players grouped by minutes_played
+  # Create a list of lists to store players grouped by minutes
   groups = []
 
   current_group = []
-  current_minutes_played = None
+  current_minutes = None
 
   # Iterate through the sorted players and group them
   for player in players:
-    if player.minutes_played != current_minutes_played:
+    if player.minutes != current_minutes:
       if current_group:
         groups.append(current_group)
       current_group = [player]
-      current_minutes_played = player.minutes_played
+      current_minutes = player.minutes
     else:
       current_group.append(player)
 
@@ -98,7 +72,7 @@ def get_players_sorted(players):
   resorted_players = []
   for g in groups:
     for p in g:
-      #print(f"{p.name} {p.minutes_played}")
+      #print(f"{p.name} {p.minutes}")
       resorted_players.append(p)
 
   #print()
@@ -127,10 +101,9 @@ def pick_multiple_groups(players, group_size=5, num_shifts=8):
 
   for _ in range(num_shifts):
     players = get_players_sorted(players)
-    min_minutes_played = min(player.minutes_played for player in players)
+    min_minutes = min(player.minutes for player in players)
     players_with_min_minutes = [
-        player for player in players
-        if player.minutes_played == min_minutes_played
+        player for player in players if player.minutes == min_minutes
     ]
 
     # print("shift" + str(len(groups) + 1) + " min minutes players")
@@ -170,7 +143,7 @@ def pick_multiple_groups(players, group_size=5, num_shifts=8):
     if len(strong_group) > 0:
       group = strong_group
     for p in group:
-      p.minutes_played += 4
+      p.minutes += 4
 
     # if this was a group less than group size - it means that there wasn't enough players
     # with min minutes to form a group
@@ -188,21 +161,70 @@ def pick_multiple_groups(players, group_size=5, num_shifts=8):
   return groups
 
 
-# Call the function to pick groups for the next game
-next_game_groups = pick_multiple_groups(players)
+def get_groups():
+  # Call the function to pick groups for the next game
+  next_game_groups = pick_multiple_groups(players)
 
-# Print out the groups
-for shift, group in enumerate(next_game_groups, start=1):
-  print(f"\nShift {shift} - Players:")
-  for player in group:
-    print(f"{player.name} {player.minutes_played}")
+  print("get_groups" + str(len(next_game_groups)))
+  for shift, group in enumerate(next_game_groups, start=1):
+    print(f"\nShift {shift} - Players:")
+    for player in group:
+      print(f"{player.name} {player.minutes}")
 
-# print out players, minutes, shifts
-print()
-f = open(games_out_file, "w")
-for p in players:
-  print(f"{p.name} {p.minutes_played} {p.shifts}")
-  if p.shifts > 3:
-    print(">>>>>>>ERROR: too many shifts<<<<<<<<<<<<")
-  # dump player,minutes to file (can be used to determine shifts for next game)
-  f.write(f"{p.name},{p.minutes_played}\n")
+  print()
+  f = open(games_out_file, "w")
+  for p in players:
+    print(f"{p.name} {p.minutes} {p.shifts}")
+    if p.shifts > 3:
+      print(">>>>>>>ERROR: too many shifts<<<<<<<<<<<<")
+    # dump player,minutes to file (can be used to determine shifts for next game)
+    f.write(f"{p.name},{p.minutes}\n")
+  print()
+  return next_game_groups
+
+
+def print_groups(groups):
+  # Print out the groups
+  print(len(groups))
+  for shift, group in enumerate(groups, start=1):
+    print(f"\nShift {shift} - Players:")
+    for player in group:
+      print(f"{player.name} {player.minutes}")
+
+
+def get_players():
+  return players
+
+
+def load_data():
+  global players
+
+  players = []
+
+  # will load the input data
+  with open(players_file, "r") as f:
+    for l in f:
+      player_name = l.strip()
+      players.append(Player(player_name))
+
+  # Read game data from games.txt and tally up the minutes played for each player
+  if os.path.exists(games_file):
+    with open(games_file, "r") as f:
+      for line in f:
+        game_data = line.strip().split(",")
+        game_player, minutes = game_data[0], int(game_data[1])
+
+        # Find the corresponding player object and update their minutes
+        for player in players:
+          if player.name == game_player:
+            player.minutes += minutes
+  else:
+    print("no games input file")
+
+  # Sort the players by their total minutes played (from least to most)
+  players.sort(key=lambda x: x.minutes)
+
+  # Print out the total minutes played for each player
+  for player in players:
+    print(f"{player.name}: {player.minutes} minutes played")
+  print("\n\n\n")
