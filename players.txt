@@ -1,15 +1,18 @@
-Zachary Shouldice Russell
-Julian Poblete
-Sebastien Clersaint
-Alex Panagakos
-Iseoluwa Ola
-Martin Leclair
-Jageer Hundal
-Ben Lim
-Lorenzo Braganza
-Hayden Brennan
-Blake Turcotte
-Oliver Jeglic
-Wes Frechette
-Ben Larocque
-Amani Tshepelayi Kabata
+# list of players
+# number, name
+
+77, Zachary Shouldice Russell
+21, Julian Poblete
+22, Sebastien Clersaint
+12, Alex Panagakos
+14, Iseoluwa Ola
+24, Martin Leclair
+10, Jageer Hundal
+7, Ben Lim
+6, Lorenzo Braganza
+23, Hayden Brennan
+4, Blake Turcotte
+16, Oliver Jeglic
+8, Wes Frechette
+13, Ben Larocque
+9, Amani Tshepelayi Kabata

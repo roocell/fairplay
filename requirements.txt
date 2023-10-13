@@ -1,0 +1,19 @@
+- shifts must be fair for each game
+- optionally (for tournaments especially) would be nice to apply fairness across games
+    - maybe apply a weight on a player for shift favour
+- weight ability of each player to help decide lines
+    - i.e.: want to play strongest line at start/end
+- have strong lines of 3 players to keep together
+- have list of players we want to separate
+- 8 shifts per game
+- try to avoid double shifts.
+   - double shift across half time is ok
+- number of players for each game could change.
+- apply position to players
+- apply number to players
+- weight practice attendance to players to help decide extra shifts.
+- after algorithm - need ability to manually adjust by moving players, moving order of lines.
+    - page should display shifts/doubleshifts when we do this
+    - like https://docs.google.com/spreadsheets/d/1Wba5j9TyO04rzEapWkcY59O2pDvxcGFU_cdtyqs7_sM/edit?usp=sharing
+- would be nice to spread out shifts (this is hard)
+- make sure a player gets at least one shift per half

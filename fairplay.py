@@ -1,5 +1,8 @@
 import random
 import os
+from logger import log as log
+from shift_limits import get_shift_limits, get_max_shifts, verify_shift_limits
+from utils import no_duplicates
 
 # input
 # players.txt  - a list of players
@@ -9,33 +12,53 @@ import os
 #   dumps the recommended shifts for the next game
 #   games_out.txt - adjusted games file that can be used for the next time
 
-games_file = "games.txt"
-games_out_file = "games_out.txt"
+roster_file = "roster.out"
 players_file = "players.txt"
-stronglines_file = "stronglines.txt"
+
 stronglines_enabled = False
+stronglines_file = "stronglines.txt"
+
+prevshift_enabled = False
+prevshifts_file = "prevshifts.txt"
+
+# PLAYERS
+##################################################
 
 
 class Player:
 
-  def __init__(self, name):
+  def __init__(self, name, number):
     self.name = name
-    self.minutes = 0
+    self.number = number
     self.shifts = 0
 
 
-# Read player data from players.txt and store in a list of Player objects
-players = []
+def load_players():
+  players = []
+
+  # will load the input data
+  with open(players_file, "r") as f:
+    for l in f:
+      # skip comments or blank lines
+      if l.count('#') > 0 or len(l.strip()) <= 0:
+        continue
+      parts = l.strip().split(',')
+      name = parts[1].strip()
+      number = parts[0].strip()
+      players.append(Player(name, number))
+  return players
 
 
-# return an array of players given an array of player names
-def getplayers(players, pnames):
-  plist = []
-  for n in pnames:
-    for p in players:
-      if p.name == n:
-        plist.append(p)
-  return plist
+def find_player(players, name):
+  for player in players:
+    if player.name == name:
+      return player
+  return None
+
+
+def print_players(players):
+  for p in players:
+    log.debug(f"{p.number} {p.name}: {p.shifts}")
 
 
 def get_players_sorted(players):
@@ -79,152 +102,212 @@ def get_players_sorted(players):
   return resorted_players
 
 
-# return an array of players in a strongline if the given player is in a strongline
-def strongline(players, player):
-  if os.path.exists(stronglines_file):
-    with open(stronglines_file, "r") as f:
-      for l in f:
-        strongdata = l.strip().split(", ")
-        strongplayers = getplayers(players, strongdata)
-        for sp in strongplayers:
-          if player.name == sp.name:
-            print(player.name + " is in a strongline with " + l + "\n")
-            return strongplayers
-  print(player.name + " is NOT in a strong group" + "\n")
-  return []  # an empty array
+# sort the players by shifts but shuffle within each group of shifts
+def get_players_sorted(players):
 
+  # Sort players by minutes in ascending order
+  players.sort(key=lambda x: x.shifts)
 
-# Function to randomly pick multiple groups of players for the next game
-def pick_multiple_groups(players, group_size=5, num_shifts=8):
+  # Create a list of lists to store players grouped by minutes
   groups = []
-  max_shifts = int(len(players) / group_size)
 
-  for _ in range(num_shifts):
-    players = get_players_sorted(players)
-    min_minutes = min(player.minutes for player in players)
-    players_with_min_minutes = [
-        player for player in players if player.minutes == min_minutes
-    ]
+  current_group = []
+  current_shifts = None
 
-    # print("shift" + str(len(groups) + 1) + " min minutes players")
-    # for p in players_with_min_minutes:
-    #   print(p.name)
-    # print("\n")
+  # Iterate through the sorted players and group them
+  for player in players:
+    if player.shifts != current_shifts:
+      if current_group:
+        groups.append(current_group)
+      current_group = [player]
+      current_shifts = player.shifts
+    else:
+      current_group.append(player)
+  # Append the last group
+  if current_group:
+    groups.append(current_group)
 
-    # if the player already has max shifts, then remove him from selection
-    for p in players_with_min_minutes.copy():
-      if p.shifts >= max_shifts:
-        print(f"removing {p.name}")
-        players_with_min_minutes.remove(p)
+  # go through groups and shuffle each group
+  for g in groups:
+    random.shuffle(g)
 
-    # pick a group
-    group = players_with_min_minutes[:group_size]
-
-    # adjust group for stronglines
-    # if anyone in the group is in a strongline, pick that strongline and 2 others
-    strong_group = []
-    if stronglines_enabled:
-      for p in group:
-        strongplayers = strongline(players, p)
-        if len(strongplayers) > 0:
-          strong_group = strongplayers
-
-          # remove these players from the original list
-          players = [
-              player for player in players if player not in strongplayers
-          ]
-          players = get_players_sorted(players)
-
-          # add more players to fill out a line
-          # TODO: we should eliminate other strong players from here?
-          strong_group += players[:5 - len(strongplayers)]
-          break
-
-    if len(strong_group) > 0:
-      group = strong_group
-    for p in group:
-      p.minutes += 4
-
-    # if this was a group less than group size - it means that there wasn't enough players
-    # with min minutes to form a group
-    # just - reiterate - and it'll automatically keep increasing this players minutes until
-    # he gets into the next group and forms a 5
-    if len(group) < group_size:
-      continue
-
-    groups.append(group)
-
-    # adjust shifts
-    for p in group:
-      p.shifts += 1
-
-  return groups
+  # now put them all into a flat array again
+  resorted_players = []
+  for g in groups:
+    for p in g:
+      resorted_players.append(p)
+  return resorted_players
 
 
-def get_groups():
-  # Call the function to pick groups for the next game
-  next_game_groups = pick_multiple_groups(players)
-
-  print("get_groups" + str(len(next_game_groups)))
-  for shift, group in enumerate(next_game_groups, start=1):
-    print(f"\nShift {shift} - Players:")
-    for player in group:
-      print(f"{player.name} {player.minutes}")
-
-  print()
-  f = open(games_out_file, "w")
-  for p in players:
-    print(f"{p.name} {p.minutes} {p.shifts}")
-    if p.shifts > 3:
-      print(">>>>>>>ERROR: too many shifts<<<<<<<<<<<<")
-    # dump player,minutes to file (can be used to determine shifts for next game)
-    f.write(f"{p.name},{p.minutes}\n")
-  print()
-  return next_game_groups
+### STRONGLINES
+###################################
 
 
-def print_groups(groups):
-  # Print out the groups
-  print(len(groups))
-  for shift, group in enumerate(groups, start=1):
-    print(f"\nShift {shift} - Players:")
-    for player in group:
-      print(f"{player.name} {player.minutes}")
-
-
-def get_players():
-  return players
-
-
-def load_data():
-  global players
-
-  players = []
+# each line in the files contains a list of players
+# this function will return a list of groups of Players
+def load_stronglines(players):
+  stronglines = []
 
   # will load the input data
-  with open(players_file, "r") as f:
+  with open(stronglines_file, "r") as f:
     for l in f:
-      player_name = l.strip()
-      players.append(Player(player_name))
+      # skip comments, blank lines
+      if l.count('#') > 0 or len(l.strip()) <= 0:
+        continue
+      names = l.strip().split(',')
+      group = []
 
-  # Read game data from games.txt and tally up the minutes played for each player
-  if os.path.exists(games_file):
-    with open(games_file, "r") as f:
-      for line in f:
-        game_data = line.strip().split(",")
-        game_player, minutes = game_data[0], int(game_data[1])
+      # strip any whitespace
+      for n in names:
+        n = n.strip()
+        p = find_player(players, n)
+        group.append(p)
+      stronglines.append(group)
+  return stronglines
 
-        # Find the corresponding player object and update their minutes
-        for player in players:
-          if player.name == game_player:
-            player.minutes += minutes
-  else:
-    print("no games input file")
 
-  # Sort the players by their total minutes played (from least to most)
-  players.sort(key=lambda x: x.minutes)
+def get_players_not_in_stronglines(players, stronglines):
+  nsl_players = []
+  for p in players:
+    match = False
+    for sl in stronglines:
+      for psl in sl:
+        if p.name == psl.name:
+          match = True
+          break
+    if match == False:
+      nsl_players.append(p)
+  return nsl_players
 
-  # Print out the total minutes played for each player
-  for player in players:
-    print(f"{player.name}: {player.minutes} minutes played")
-  print("\n\n\n")
+
+def print_stronglines(stronglines):
+  for sl in stronglines:
+    log.debug(" ")
+    log.debug("strongline:")
+    print_players(sl)
+
+
+def print_shifts(shifts):
+  for i, s in enumerate(shifts, start=1):
+    log.debug(" ")
+    log.debug(f"shift {i}")
+    print_players(s)
+
+
+def get_players_not_at_max_shifts(players, shifts):
+  pnm_players = []
+  max_shifts = get_max_shifts(len(players))
+  for s in shifts:
+    for p in s:
+      if p.shifts < max_shifts:
+        if p not in pnm_players:
+          pnm_players.append(p)
+  return pnm_players
+
+
+# build a set of groups of strongline players
+def get_strongline_shifts(players, stronglines, num_shifts=8):
+  # shuffle them so we don't always have the same starting line
+  random.shuffle(stronglines)
+
+  shiftlimits = get_shift_limits(len(players))
+  max_shifts = get_max_shifts(len(players))
+  log.debug(shiftlimits)
+  log.debug(max_shifts)
+
+  # make 8 shifts with stronglines
+  shifts = []
+  for i in range(num_shifts):
+    sl = stronglines[i % len(stronglines)]
+
+    # as we do this keep track of shifts
+    add_shift = False
+    for p in sl:
+      # consider shift limits
+      # if we've hit the limit for a player, then we should
+      # stop filling in stronglines
+      if p.shifts < max_shifts:
+        p.shifts += 1
+        add_shift = True
+      else:
+        log.debug(f"SHIFT LIMIT REACHED: {p.name}")
+
+    if add_shift:
+      # make a copy of the stronglong so we're not putting
+      # the same strongline object into multiple shifts
+      # this will mess up shift counting otherwise
+      shifts.append(sl.copy())
+
+  # now the shifts are filled with stronglines
+  # all shifts could be filled - but they could also be partly filled
+  # if there wasn't enough stronglines defined
+  # if that's the case we should go through and create num_shifts shifts
+  # and space out the stronglines
+  if len(shifts) < num_shifts:
+    diff = num_shifts - len(shifts)
+    for i in range(diff):
+      shifts.insert((i + 1) * diff, [])
+
+  # verify we have the proper amount of shifts
+  assert len(shifts) == num_shifts, "didn't get to the right number of shifts"
+  return shifts
+
+
+def fill_shifts(players, shifts):
+  # assumes shifts is already an 8 shift array partially filled in with players
+
+  # get a list of players not in the stronglines
+  nsl_players = get_players_not_in_stronglines(players, stronglines)
+  assert no_duplicates(nsl_players), "nsl_players has duplicates"
+  #log.debug("nsl_players")
+  #print_players(nsl_players)
+  # get a list of players in the shifts that haven't reached the max shifts
+  pnm_players = get_players_not_at_max_shifts(players, shifts)
+  assert no_duplicates(pnm_players), "pnm_players has duplicates"
+  #log.debug("pnm_players")
+  #print_players(pnm_players)
+
+  # combine them sort them by shifts and randomize within the groups
+  next_players = get_players_sorted(nsl_players + pnm_players)
+
+  max_shifts = get_max_shifts(len(players))
+
+  for s in shifts:
+    while len(s) < 5:  # keep going until the shift is full
+      # log.debug("next_players")
+      # print_players(next_players)
+
+      # fill in the shift and increment shifts
+      # but also keep on eye on max shifts to make sure there's no error
+      next_players[0].shifts += 1
+      assert next_players[
+          0].shifts <= max_shifts, "ERROR: we've exceeded max shifts"
+
+      #log.debug(f"ADDING {next_players[0].name}")
+      s.append(next_players[0])
+
+      # redo the player sorting so we're always picking a randomized player with
+      # the least amount of shifts
+      next_players = get_players_sorted(next_players)
+
+  return shifts
+
+
+def get_shifts(players, stronglines, num_shifts=8):
+  shifts = get_strongline_shifts(players, stronglines, num_shifts)
+  shifts = fill_shifts(players, shifts)
+  return shifts
+
+
+if __name__ == '__main__':
+  players = load_players()
+  print_players(players)
+
+  stronglines = load_stronglines(players)
+  #print_stronglines(stronglines)
+
+  shifts = get_shifts(players, stronglines)
+  print_shifts(shifts)
+
+  if verify_shift_limits(len(players), [p.shifts for p in players]):
+    log.debug("VERIFICATION PASSED")
