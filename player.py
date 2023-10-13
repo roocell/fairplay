@@ -1,5 +1,6 @@
 import random
 from logger import log as log
+import prevshift
 
 players_file = "players.txt"
 
@@ -13,6 +14,7 @@ class Player:
     self.name = name
     self.number = number
     self.shifts = 0
+    self.prev = 0  # previous shifts
 
 
 def load():
@@ -28,6 +30,10 @@ def load():
       name = parts[1].strip()
       number = parts[0].strip()
       players.append(Player(name, number))
+
+  if prevshift.enabled:
+    prevshift.load(players)
+
   return players
 
 
@@ -40,48 +46,10 @@ def find(players, name):
 
 def dump(players):
   for p in players:
-    log.debug(f"{p.number} {p.name}: {p.shifts}")
-
-
-def get_sorted(players):
-  # sort the players by minutes but shuffle within each group of minutes
-
-  # Sort players by minutes in ascending order
-  players.sort(key=lambda x: x.minutes)
-
-  # Create a list of lists to store players grouped by minutes
-  groups = []
-
-  current_group = []
-  current_minutes = None
-
-  # Iterate through the sorted players and group them
-  for player in players:
-    if player.minutes != current_minutes:
-      if current_group:
-        groups.append(current_group)
-      current_group = [player]
-      current_minutes = player.minutes
+    if prevshift.enabled:
+      log.debug(f"{p.number} {p.name}: {p.shifts} {p.prev}")
     else:
-      current_group.append(player)
-
-  # Append the last group
-  if current_group:
-    groups.append(current_group)
-
-  # go through groups and shuffle each group
-  for g in groups:
-    random.shuffle(g)
-
-  # now put them all into a flat array again
-  resorted_players = []
-  for g in groups:
-    for p in g:
-      #print(f"{p.name} {p.minutes}")
-      resorted_players.append(p)
-
-  #print()
-  return resorted_players
+      log.debug(f"{p.number} {p.name}: {p.shifts}")
 
 
 # sort the players by shifts but shuffle within each group of shifts
@@ -110,8 +78,13 @@ def get_sorted(players):
     groups.append(current_group)
 
   # go through groups and shuffle each group
+  # if using previous shift, sort ascending order
+  # so that players with fewer previous shifts get favoured
   for g in groups:
     random.shuffle(g)
+    if prevshift.enabled:
+      log.debug("sorting with PREV SHIFT")
+      g.sort(key=lambda x: x.prev)
 
   # now put them all into a flat array again
   resorted_players = []

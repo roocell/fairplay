@@ -17,3 +17,4 @@
     - like https://docs.google.com/spreadsheets/d/1Wba5j9TyO04rzEapWkcY59O2pDvxcGFU_cdtyqs7_sM/edit?usp=sharing
 - would be nice to spread out shifts (this is hard)
 - make sure a player gets at least one shift per half
+- avoid pairing certain players on same shift (like if you have two small players, or if you want to spread out your big players without using stronglines)

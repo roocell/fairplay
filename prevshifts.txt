@@ -1,5 +1,6 @@
 # this is if you want to use previous shifts (recorded from previous games)
 # to be considered when determining fairplay for an upcoming game
+# this can be used as a method to have the algorithm favour players
 
 Zachary Shouldice Russell,5
 Sebastien Clersaint,5
@@ -10,7 +11,7 @@ Julian Poblete,5
 Alex Panagakos,6
 Jageer Hundal,5
 Lorenzo Braganza,6
-Hayden Brennan,6
+Hayden Brennan,0
 Blake Turcotte,6
 Oliver Jeglic,6
 Wes Frechette,4

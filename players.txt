@@ -7,12 +7,12 @@
 12, Alex Panagakos
 14, Iseoluwa Ola
 24, Martin Leclair
-10, Jageer Hundal
+#10, Jageer Hundal
 7, Ben Lim
 6, Lorenzo Braganza
 23, Hayden Brennan
 4, Blake Turcotte
-16, Oliver Jeglic
+#16, Oliver Jeglic
 8, Wes Frechette
 13, Ben Larocque
 9, Amani Tshepelayi Kabata

@@ -48,4 +48,4 @@ def dump(stronglines):
   for sl in stronglines:
     log.debug(" ")
     log.debug("strongline:")
-    print_players(sl)
+    player.dump(sl)

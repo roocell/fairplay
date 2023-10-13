@@ -20,6 +20,16 @@ def get_shift_limits(num_players):
   return shift_numbers[num_players]
 
 
+def get_pcount_for_max_shifts(num_players):
+  max_shifts = get_max_shifts(num_players)
+
+  for t in shift_numbers[num_players]:
+    if t[0] == max_shifts:
+      return t[1]
+
+  assert (0), f"something went wrong - should never be here"
+
+
 def get_max_shifts(num_players):
   max = 0
   for t in shift_numbers[num_players]:
@@ -37,7 +47,7 @@ def verify_shift_limits(num_players, shift_list):
     cnts[c] = shift_list.count(c)
 
   for t in shift_numbers[num_players]:
-    #print(f"{cnts[t[0]]} {t[1]}")
     assert cnts[t[0]] == t[1],  \
-      f"ERROR filled shifts do not comply to shift limits"
+      f"ERROR filled shifts do not comply to shift limits " + \
+      f"num_players:{num_players} {t[0]},{t[1]} -> ERROR {cnts[t[0]]} players with {t[0]} shifts"
   return True

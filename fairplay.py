@@ -1,7 +1,7 @@
 import random
 import os
 from logger import log as log
-from shift_limits import get_shift_limits, get_max_shifts, verify_shift_limits
+from shift_limits import get_shift_limits, get_max_shifts, verify_shift_limits, get_pcount_for_max_shifts
 from utils import no_duplicates
 import player
 import strong
@@ -44,9 +44,11 @@ def get_strongline_shifts(players, stronglines, num_shifts=8):
   random.shuffle(stronglines)
 
   shiftlimits = get_shift_limits(len(players))
+  pcount_for_max_shifts = get_pcount_for_max_shifts(len(players))
   max_shifts = get_max_shifts(len(players))
   log.debug(shiftlimits)
   log.debug(max_shifts)
+  log.debug(pcount_for_max_shifts)
 
   # make 8 shifts with stronglines
   shifts = []
@@ -54,22 +56,40 @@ def get_strongline_shifts(players, stronglines, num_shifts=8):
     sl = stronglines[i % len(stronglines)]
 
     # as we do this keep track of shifts
-    add_shift = False
+    add_shift = True
     for p in sl:
       # consider shift limits
-      # if we've hit the limit for a player, then we should
-      # stop filling in stronglines
-      if p.shifts < max_shifts:
-        p.shifts += 1
-        add_shift = True
-      else:
-        log.debug(f"SHIFT LIMIT REACHED: {p.name}")
+      pshifts = []
+      pshifts = [pp.shifts for pp in players]  # all players shifts
+      available_max_shift_spots = pcount_for_max_shifts - pshifts.count(
+          max_shifts)
+
+      # stop filling in stronglines if:
+      #  - this player is already at max shifts
+      #log.debug(f" {p.shifts} < {max_shifts}")
+      if p.shifts >= max_shifts:
+        add_shift = False
+
+      #  - we already have enough players at max shifts
+      #log.debug(f" {pshifts.count(max_shifts)} < {pcount_for_max_shifts}")
+      if pshifts.count(max_shifts) >= pcount_for_max_shifts:
+        add_shift = False
+
+      #  - will adding this shift put you over?
+      #log.debug(f" {available_max_shift_spots} < {len(sl)}")
+      if p.shifts == (max_shifts - 1) and available_max_shift_spots < len(sl):
+        add_shift = False
 
     if add_shift:
       # make a copy of the stronglong so we're not putting
       # the same strongline object into multiple shifts
       # this will mess up shift counting otherwise
+      for p in sl:
+        p.shifts += 1
       shifts.append(sl.copy())
+      #log.debug(f"add Shift: {sl[0].name} {sl[0].shifts}")
+    else:
+      log.debug(f"SHIFT LIMIT REACHED: {sl[0].name}")
 
   # now the shifts are filled with stronglines
   # all shifts could be filled - but they could also be partly filled
@@ -107,8 +127,8 @@ def fill_shifts(players, shifts):
 
   for s in shifts:
     while len(s) < 5:  # keep going until the shift is full
-      # log.debug("next_players")
-      # player.dump(next_players)
+      log.debug("next_players")
+      player.dump(next_players)
 
       # fill in the shift and increment shifts
       # but also keep on eye on max shifts to make sure there's no error
@@ -128,8 +148,18 @@ def fill_shifts(players, shifts):
 
 def get_shifts(players, stronglines, num_shifts=8):
   shifts = get_strongline_shifts(players, stronglines, num_shifts)
+  log.debug("STRONGLINE SHIFTS")
+  #print_shifts(shifts)
   shifts = fill_shifts(players, shifts)
   return shifts
+
+
+def verify_unique_players_on_shifts(shifts):
+  for s, shift in enumerate(shifts):
+    for i, p in enumerate(shift):
+      for j, pp in enumerate(shift):
+        if i != j:
+          assert pp != p, f"ERROR {p.name} is twice on shift {s+1}"
 
 
 if __name__ == '__main__':
@@ -144,3 +174,5 @@ if __name__ == '__main__':
 
   if verify_shift_limits(len(players), [p.shifts for p in players]):
     log.debug("VERIFICATION PASSED")
+
+  verify_unique_players_on_shifts(shifts)
