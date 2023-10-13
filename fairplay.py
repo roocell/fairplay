@@ -130,14 +130,22 @@ def fill_shifts(players, shifts):
       log.debug("next_players")
       player.dump(next_players)
 
+      # sometimes a player will bubble to the top and could
+      # be inserted into the same line twice
+      # avoid this by looping through next player list
+      n = 0
+      p_to_add = next_players[n]
+      while p_to_add in s:
+        p_to_add = next_players[n]
+        n = n + 1
+
       # fill in the shift and increment shifts
       # but also keep on eye on max shifts to make sure there's no error
-      next_players[0].shifts += 1
-      assert next_players[
-          0].shifts <= max_shifts, "ERROR: we've exceeded max shifts"
+      p_to_add.shifts += 1
+      assert p_to_add.shifts <= max_shifts, "ERROR: we've exceeded max shifts"
 
-      #log.debug(f"ADDING {next_players[0].name}")
-      s.append(next_players[0])
+      #log.debug(f"ADDING {p_to_add.name}")
+      s.append(p_to_add)
 
       # redo the player sorting so we're always picking a randomized player with
       # the least amount of shifts
