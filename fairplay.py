@@ -5,19 +5,39 @@ from shift_limits import get_shift_limits, get_max_shifts, verify_shift_limits, 
 from utils import no_duplicates
 import player
 import strong
+import argparse
 
 # input
 # players.txt  - a list of players
-# games.txt - a list of comma separated values game#,player,minutes
+# stronglines.txt - a list of strong 3 player groups
+# prevshifts.txt - a list of comma separated values game#,player,minutes
 #           - this is a running file of all the minutes played by a player for all games
 # output
 #   dumps the recommended shifts for the next game
-#   games_out.txt - adjusted games file that can be used for the next time
 
-roster_file = "roster.out"
+# TODO: input / output should all be JSON - to integrate with web
 
 prevshift_enabled = False
 prevshifts_file = "prevshifts.txt"
+players_file = "players.txt"
+stronglines_file = "stronglines.txt"
+
+
+def run_fairplay_algo(players_file, stronglines_file, prevshifts_file):
+
+  players = player.load(players_file)
+  player.dump(players)
+
+  stronglines = strong.load(players, stronglines_file)
+  #strong.dump(stronglines)
+
+  shifts = get_shifts(players, stronglines)
+  print_shifts(shifts)
+
+  if verify_shift_limits(len(players), [p.shifts for p in players]):
+    log.debug("VERIFICATION PASSED")
+
+  verify_unique_players_on_shifts(shifts)
 
 
 def print_shifts(shifts):
@@ -106,7 +126,7 @@ def get_strongline_shifts(players, stronglines, num_shifts=8):
   return shifts
 
 
-def fill_shifts(players, shifts):
+def fill_shifts(players, shifts, stronglines):
   # assumes shifts is already an 8 shift array partially filled in with players
 
   # get a list of players not in the stronglines
@@ -158,7 +178,7 @@ def get_shifts(players, stronglines, num_shifts=8):
   shifts = get_strongline_shifts(players, stronglines, num_shifts)
   log.debug("STRONGLINE SHIFTS")
   #print_shifts(shifts)
-  shifts = fill_shifts(players, shifts)
+  shifts = fill_shifts(players, shifts, stronglines)
   return shifts
 
 
@@ -170,17 +190,26 @@ def verify_unique_players_on_shifts(shifts):
           assert pp != p, f"ERROR {p.name} is twice on shift {s+1}"
 
 
+def main():
+  parser = argparse.ArgumentParser(description="Process input files")
+  # Define command-line arguments for the three input files
+  parser.add_argument("--players", help="Path to the players file")
+  parser.add_argument("--stronglines", help="Path to the stronglines file")
+  parser.add_argument("--prevshifts", help="Path to the prevshifts file")
+
+  args = parser.parse_args()
+
+  # dont do this for now - we'll use default files above otherwise
+  # Check if the required arguments are provided
+  # if args.players and args.stronglines and args.prevshifts:
+  #   players_file = args.players
+  #   stronglines_file = args.stronglines
+  #   prevshifts_file = args.prevshifts
+  #else:
+  #  parser.print_help()
+
+  run_fairplay_algo()
+
+
 if __name__ == '__main__':
-  players = player.load()
-  player.dump(players)
-
-  stronglines = strong.load(players)
-  #strong.dump(stronglines)
-
-  shifts = get_shifts(players, stronglines)
-  print_shifts(shifts)
-
-  if verify_shift_limits(len(players), [p.shifts for p in players]):
-    log.debug("VERIFICATION PASSED")
-
-  verify_unique_players_on_shifts(shifts)
+  main()

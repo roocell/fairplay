@@ -4,12 +4,11 @@ import player
 ### STRONGLINES
 ###################################
 enabled = True
-stronglines_file = "stronglines.txt"
 
 
 # each line in the files contains a list of players
 # this function will return a list of groups of Players
-def load(players):
+def load(players, stronglines_file):
   stronglines = []
 
   # will load the input data

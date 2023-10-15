@@ -2,10 +2,9 @@ from logger import log as log
 import player
 
 enabled = False
-prevshifts_file = "prevshifts.txt"
 
 
-def load(players):
+def load(players, prevshifts_file):
   # will load the input data
   with open(prevshifts_file, "r") as f:
     for l in f:

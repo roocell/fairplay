@@ -1,0 +1,5 @@
+# title: 13p_2sl_0pv
+# scenario:
+#   13 players
+#   2 strong lines
+#   prevshift disabled

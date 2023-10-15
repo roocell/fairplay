@@ -2,8 +2,6 @@ import random
 from logger import log as log
 import prevshift
 
-players_file = "players.txt"
-
 # PLAYERS
 ##################################################
 
@@ -17,7 +15,7 @@ class Player:
     self.prev = 0  # previous shifts
 
 
-def load():
+def load(players_file):
   players = []
 
   # will load the input data
