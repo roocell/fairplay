@@ -6,6 +6,7 @@ from utils import no_duplicates
 import player
 import strong
 import argparse
+import commentjson
 
 # input
 # players.txt  - a list of players
@@ -18,9 +19,6 @@ import argparse
 # TODO: input / output should all be JSON - to integrate with web
 
 prevshift_enabled = False
-prevshifts_file = "prevshifts.txt"
-players_file = "players.txt"
-stronglines_file = "stronglines.txt"
 
 
 def run_fairplay_algo(players_file, stronglines_file, prevshifts_file):
@@ -208,7 +206,26 @@ def main():
   #else:
   #  parser.print_help()
 
-  run_fairplay_algo()
+  # read json files into dicts
+  with open(players_file, "r") as json_file:
+    players_json = commentjson.load(json_file)
+  with open(stronglines_file, "r") as json_file:
+    stronglines_json = commentjson.load(json_file)
+  with open(prevshifts_file, "r") as json_file:
+    prevshifts_json = commentjson.load(json_file)
+
+  # will load the input data
+  with open(players_file, "r") as f:
+    for l in f:
+      # skip comments or blank lines
+      if l.count('#') > 0 or len(l.strip()) <= 0:
+        continue
+      parts = l.strip().split(',')
+      name = parts[1].strip()
+      number = parts[0].strip()
+      players.append(Player(name, number))
+
+  run_fairplay_algo(players_file, stronglines_file, prevshifts_file)
 
 
 if __name__ == '__main__':

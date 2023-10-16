@@ -1,0 +1,19 @@
+# list of players
+# number, name
+
+[
+    {"number": 77, "name": "Zachary Shouldice Russell"},
+    {"number": 21, "name": "Julian Poblete"},
+    {"number": 22, "name": "Sebastien Clersaint"},
+    {"number": 12, "name": "Alex Panagakos"},
+    {"number": 14, "name": "Iseoluwa Ola"},
+    {"number": 24, "name": "Martin Leclair"},
+    {"number": 10, "name": "Jageer Hundal"},
+    {"number": 7, "name": "Ben Lim"},
+    {"number": 6, "name": "Lorenzo Braganza"},
+    {"number": 23, "name": "Hayden Brennan"},
+    {"number": 4, "name": "Blake Turcotte"},
+    {"number": 8, "name": "Wes Frechette"},
+    {"number": 13, "name": "Ben Larocque"},
+    {"number": 9, "name": "Amani Tshepelayi Kabata"}
+]

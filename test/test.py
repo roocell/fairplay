@@ -16,6 +16,8 @@ sys.path.append(parent_directory)
 from logger import log as log
 import fairplay
 
+# TODO: accept argument to run one test
+
 # Get the current directory
 current_directory = os.getcwd()
 

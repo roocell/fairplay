@@ -15,7 +15,7 @@ class Player:
     self.prev = 0  # previous shifts
 
 
-def load(players_file):
+def load(players_json):
   players = []
 
   # will load the input data

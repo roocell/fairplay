@@ -1,5 +1,5 @@
-# title: 13p_2sl_0pv
+# title: 15p_3sl_0pv
 # scenario:
-#   13 players
-#   2 strong lines
+#   15 players
+#   3 strong lines
 #   prevshift disabled
