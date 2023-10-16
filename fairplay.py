@@ -17,9 +17,9 @@ import prevshift
 # output
 #   dumps the recommended shifts for the next game
 
-players = []
-stronglines = []
-shifts = []
+players = []  # an array of Players
+stronglines = []  # an array of an array of Players
+shifts = []  # an array of an array of Players
 
 
 def run_fairplay_algo(players, stronglines):
@@ -49,6 +49,11 @@ def load(players_file, stronglines_file, prevshifts_file):
 
   stronglines = strong.load(players, stronglines_json)
   #strong.dump(stronglines)
+
+  # default the shifts to all players in first shift
+  shifts.append(players)
+  for i in range(7):
+    shifts.append([])  # fill in 7 more empty lines
 
 
 def find_player_in_shift(player_name, shift):

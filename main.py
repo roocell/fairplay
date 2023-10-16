@@ -3,6 +3,13 @@ import fairplay
 from logger import log as log
 
 # TODO: add flask_socketio if we need async updates to web
+# TODO: should probably just hold python objects as dicts and then pass the entire
+#       object back and forth to web over AJAX
+# TODO: add flask_sqlalchemy if we need to persist data
+# TODO: add flask_login if we need to persist login info
+# TODO: add flask_wtf if we need to add form validation
+# TODO: add flask_mail if we need to send emails
+# TODO: add flask_bcrypt if we need to hash passwords
 
 app = Flask(
     __name__,
@@ -23,6 +30,7 @@ def home_page():
   return render_template(
       'index.html',  # Template file path, starting from the templates folder. 
       players=fairplay.players,
+      shifts=fairplay.shifts,
   )
 
 

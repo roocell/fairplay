@@ -11,7 +11,7 @@ function getshifts()
     var players = shift.querySelectorAll(".player");
         players.forEach(function(player) {
           parray.push({
-            "name" : player.innerHTML
+            "name" : player.id
               })
         });
     data.push(parray)

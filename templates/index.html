@@ -21,44 +21,17 @@
       </form>
 
       <div class="lanes">
-        <div class="shift" id="shift1">
-          <h3 class="heading">Shift1</h3>
-          <!-- by default throw all players into shift1 until the algo is run -->
-          {% for player in players %}
-            <p class="player" draggable="true">{{ player.name }}</p>
-          
-          {% endfor %}
-        </div>
-
-        <div class="shift">
-          <h3 class="heading">Shift2</h3>
-        </div>
-
-        <div class="shift">
-          <h3 class="heading">Shift3</h3>
-        </div>
-
-        <div class="shift">
-          <h3 class="heading">Shift4</h3>
-        </div>
-
-        <div class="shift">
-          <h3 class="heading">Shift5</h3>
-        </div>
-
-        <div class="shift">
-          <h3 class="heading">Shift6</h3>
-        </div>
-
-        <div class="shift">
-          <h3 class="heading">Shift7</h3>
-        </div>
-
-        <div class="shift">
-          <h3 class="heading">Shift8</h3>
-        </div>
-
-      </div>
+        
+        {% for shift in shifts %}
+          <div class="shift" id="shift{{ loop.index }}">
+            <h3 class="heading">Shift{{ loop.index }}</h3>
+              {% for player in shift %}
+                <p class="player" draggable="true" id="{{ player.name }}">{{ player.number }} {{ player.name }}</p>
+              {% endfor %}
+          </div>
+        {% endfor %}
+        
+      </div> <!-- end of lanes -->
     </div>
   </body>
 </html>
