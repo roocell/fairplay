@@ -11,11 +11,15 @@ app = Flask(
 @app.route('/')  # What happens when the user visits the site
 def home_page():
   # run fairplay so we have all the data web the page comes up
-  fairplay.load_data()
+  fairplay.load(
+      "test/15p_3sl_0pv/players.json",
+      "test/15p_3sl_0pv/stronglines.json",
+      "test/15p_3sl_0pv/prevshifts.json",
+  )
 
   return render_template(
       'index.html',  # Template file path, starting from the templates folder. 
-      players=fairplay.get_players(),
+      players=fairplay.players,
   )
 
 

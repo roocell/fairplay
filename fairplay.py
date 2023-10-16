@@ -21,15 +21,10 @@ import prevshift
 
 prevshift_enabled = False
 
+players = []
+
 
 def run_fairplay_algo(players_json, stronglines_json, prevshifts_json):
-
-  players = player.load(players_json, prevshifts_json)
-  player.dump(players)
-
-  stronglines = strong.load(players, stronglines_json)
-  #strong.dump(stronglines)
-
   shifts = get_shifts(players, stronglines)
   print_shifts(shifts)
 
@@ -39,7 +34,7 @@ def run_fairplay_algo(players_json, stronglines_json, prevshifts_json):
   verify_unique_players_on_shifts(shifts)
 
 
-def load_files_and_run(players_file, stronglines_file, prevshifts_file):
+def load(players_file, stronglines_file, prevshifts_file):
   with open(players_file, "r") as file:
     file_contents = file.read()
     players_json = commentjson.loads(file_contents)
@@ -48,7 +43,18 @@ def load_files_and_run(players_file, stronglines_file, prevshifts_file):
     stronglines_json = commentjson.loads(file_contents)
   with open(prevshifts_file, "r") as file:
     file_contents = file.read()
-    prevshifts_json = commentjson.loads(file_contents)
+  prevshifts_json = commentjson.loads(file_contents)
+
+  global players
+  players = player.load(players_json, prevshifts_json)
+  player.dump(players)
+
+  stronglines = strong.load(players, stronglines_json)
+  #strong.dump(stronglines)
+
+
+def load_files_and_run(players_file, stronglines_file, prevshifts_file):
+  load(players_json, stronglines_json, prevshifts_json)
   run_fairplay_algo(players_json, stronglines_json, prevshifts_json)
 
 
