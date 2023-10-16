@@ -1,9 +1,17 @@
 import random
 from logger import log as log
 import prevshift
+import json
 
-# PLAYERS
-##################################################
+
+# use a class encoder in order to dump python classes
+class PlayerEncoder(json.JSONEncoder):
+
+  def default(self, obj):
+    if isinstance(obj, Player):
+      # Return a dictionary representation of your class
+      return obj.__dict__
+    return super(PlayerEncoder, self).default(obj)
 
 
 class Player:

@@ -33,6 +33,61 @@ function updateshifts()
   });
 }
 
+function updateDomWithShifts(data)
+{
+  console.log(data);
+
+  // update the DOM with the new shifts
+  var container = document.getElementById("container");
+  container.innerHTML = "";
+  var i = 0;
+  data.forEach(function(shift) {
+    i++;
+    var shiftdiv = document.createElement('div');
+    shiftdiv.className = "shift";
+  
+    var header = document.createElement('h3');
+    header.className = "heading";
+    header.innerHTML = "Shift" + i;
+    shiftdiv.appendChild(header);
+    
+    shift.forEach(function(player) {
+      var playerp = document.createElement('p');
+      playerp.className = "player";
+      playerp.draggable = "true";
+      playerp.id = player.name;
+      playerp.innerHTML = player.number + " " + player.name;
+      shiftdiv.appendChild(playerp);
+    });
+    container.appendChild(shiftdiv);
+  });
+}
+
+function runfairplay()
+{
+  // Make a POST request to your Flask route with the JSON data
+  fetch('/runfairplay', {
+      method: 'GET',
+      headers: {
+          'Content-Type': 'application/json'
+      },
+    }).then(response => {
+        if (response.ok) {
+            // If the response status is in the 200-299 range, it means the request was successful.
+            return response.json(); // Parse the response as JSON
+        } else {
+            // Handle errors or non-successful responses here
+            throw new Error('Request failed with status: ' + response.status);
+        }
+    }).then(data => {
+        // Handle the JSON data received from the server
+        updateDomWithShifts(data);
+    }).catch(error => {
+        // Handle any network or request-related errors here
+        console.error(error);
+    });
+}
+
 const draggables = document.querySelectorAll(".player");
 const droppables = document.querySelectorAll(".shift");
 

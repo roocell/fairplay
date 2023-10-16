@@ -1,6 +1,8 @@
 from flask import Flask, render_template, flash, redirect, url_for, request
 import fairplay
 from logger import log as log
+import json
+import player
 
 # TODO: add flask_socketio if we need async updates to web
 # TODO: should probably just hold python objects as dicts and then pass the entire
@@ -10,6 +12,8 @@ from logger import log as log
 # TODO: add flask_wtf if we need to add form validation
 # TODO: add flask_mail if we need to send emails
 # TODO: add flask_bcrypt if we need to hash passwords
+
+# TODO: first list should be roster
 
 app = Flask(
     __name__,
@@ -41,7 +45,21 @@ def updateshifts():
   data = request.get_json()
   #log.debug(data)
   fairplay.updateshiftsfromweb(data)
-  return ({"message": "JSON data received successfully"})
+  return ({"message": "OK"})
+
+
+@app.route('/runfairplay', methods=['GET'])
+def runfairplay():
+  # reset shifts - so if we continue to click fairplay - we don't exceed max shifts
+  fairplay.reset_player_shifts()
+  fairplay.shifts = []  # we're rebuilding shifts from scratch
+
+  # will take player list and run alogorithm
+  # returning shifts to web page
+  fairplay.run_fairplay_algo(fairplay.players, fairplay.stronglines)
+  rc = json.dumps(fairplay.shifts, cls=player.PlayerEncoder)
+  log.debug(rc)
+  return rc
 
 
 if __name__ == '__main__':

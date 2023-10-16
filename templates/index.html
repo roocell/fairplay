@@ -17,10 +17,10 @@
       <form id="player-form">
         <input type="text" placeholder="New Player..." id="player-input" />
         <button type="submit">Add +</button>
-        <button>Run Fairplay</button>
+        <button id=fairplay onclick="runfairplay()">Run Fairplay</button>
       </form>
 
-      <div class="lanes">
+      <div class="lanes" id=container>
         
         {% for shift in shifts %}
           <div class="shift" id="shift{{ loop.index }}">

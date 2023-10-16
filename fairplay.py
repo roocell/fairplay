@@ -23,6 +23,7 @@ shifts = []  # an array of an array of Players
 
 
 def run_fairplay_algo(players, stronglines):
+  global shifts
   shifts = get_shifts(players, stronglines)
   print_shifts(shifts)
 
@@ -61,6 +62,12 @@ def find_player_in_shift(player_name, shift):
     if p.name == player_name:
       return p
   return None
+
+
+def reset_player_shifts():
+  global players
+  for p in players:
+    p.shifts = 0
 
 
 # gets called when a player is moved on the web
@@ -198,8 +205,8 @@ def fill_shifts(players, shifts, stronglines):
 
   for s in shifts:
     while len(s) < 5:  # keep going until the shift is full
-      log.debug("next_players")
-      player.dump(next_players)
+      #log.debug("next_players")
+      #player.dump(next_players)
 
       # sometimes a player will bubble to the top and could
       # be inserted into the same line twice
