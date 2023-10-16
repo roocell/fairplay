@@ -4,16 +4,9 @@ import player
 enabled = False
 
 
-def load(players, prevshifts_file):
+def load(players, prevshifts_json):
   # will load the input data
-  with open(prevshifts_file, "r") as f:
-    for l in f:
-      # skip comments or blank lines
-      if l.count('#') > 0 or len(l.strip()) <= 0:
-        continue
-      parts = l.strip().split(',')
-      name = parts[0].strip()
-      prevshifts = parts[1].strip()
-      p = player.find(players, name)
-      p.prev = prevshifts
+  for pv in prevshifts:
+    p = player.find(players, pv.name)
+    p.prev = pv.value
   return players

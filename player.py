@@ -15,22 +15,16 @@ class Player:
     self.prev = 0  # previous shifts
 
 
-def load(players_json):
+def load(players_json, prevshift_json):
+  # load into an array of Players
   players = []
 
-  # will load the input data
-  with open(players_file, "r") as f:
-    for l in f:
-      # skip comments or blank lines
-      if l.count('#') > 0 or len(l.strip()) <= 0:
-        continue
-      parts = l.strip().split(',')
-      name = parts[1].strip()
-      number = parts[0].strip()
-      players.append(Player(name, number))
+  # load json into an Array of Players
+  for p in players_json:
+    players.append(Player(p["name"], p["number"]))
 
   if prevshift.enabled:
-    prevshift.load(players)
+    prevshift.load(players, prevshifts_json)
 
   return players
 
@@ -44,10 +38,7 @@ def find(players, name):
 
 def dump(players):
   for p in players:
-    if prevshift.enabled:
-      log.debug(f"{p.number} {p.name}: {p.shifts} {p.prev}")
-    else:
-      log.debug(f"{p.number} {p.name}: {p.shifts}")
+    log.debug(f"{p.number} {p.name}: {p.shifts} {p.prev}")
 
 
 # sort the players by shifts but shuffle within each group of shifts

@@ -7,6 +7,7 @@ import player
 import strong
 import argparse
 import commentjson
+import prevshift
 
 # input
 # players.txt  - a list of players
@@ -21,12 +22,12 @@ import commentjson
 prevshift_enabled = False
 
 
-def run_fairplay_algo(players_file, stronglines_file, prevshifts_file):
+def run_fairplay_algo(players_json, stronglines_json, prevshifts_json):
 
-  players = player.load(players_file)
+  players = player.load(players_json, prevshifts_json)
   player.dump(players)
 
-  stronglines = strong.load(players, stronglines_file)
+  stronglines = strong.load(players, stronglines_json)
   #strong.dump(stronglines)
 
   shifts = get_shifts(players, stronglines)
@@ -36,6 +37,19 @@ def run_fairplay_algo(players_file, stronglines_file, prevshifts_file):
     log.debug("VERIFICATION PASSED")
 
   verify_unique_players_on_shifts(shifts)
+
+
+def load_files_and_run(players_file, stronglines_file, prevshifts_file):
+  with open(players_file, "r") as file:
+    file_contents = file.read()
+    players_json = commentjson.loads(file_contents)
+  with open(stronglines_file, "r") as file:
+    file_contents = file.read()
+    stronglines_json = commentjson.loads(file_contents)
+  with open(prevshifts_file, "r") as file:
+    file_contents = file.read()
+    prevshifts_json = commentjson.loads(file_contents)
+  run_fairplay_algo(players_json, stronglines_json, prevshifts_json)
 
 
 def print_shifts(shifts):
@@ -186,47 +200,3 @@ def verify_unique_players_on_shifts(shifts):
       for j, pp in enumerate(shift):
         if i != j:
           assert pp != p, f"ERROR {p.name} is twice on shift {s+1}"
-
-
-def main():
-  parser = argparse.ArgumentParser(description="Process input files")
-  # Define command-line arguments for the three input files
-  parser.add_argument("--players", help="Path to the players file")
-  parser.add_argument("--stronglines", help="Path to the stronglines file")
-  parser.add_argument("--prevshifts", help="Path to the prevshifts file")
-
-  args = parser.parse_args()
-
-  # dont do this for now - we'll use default files above otherwise
-  # Check if the required arguments are provided
-  # if args.players and args.stronglines and args.prevshifts:
-  #   players_file = args.players
-  #   stronglines_file = args.stronglines
-  #   prevshifts_file = args.prevshifts
-  #else:
-  #  parser.print_help()
-
-  # read json files into dicts
-  with open(players_file, "r") as json_file:
-    players_json = commentjson.load(json_file)
-  with open(stronglines_file, "r") as json_file:
-    stronglines_json = commentjson.load(json_file)
-  with open(prevshifts_file, "r") as json_file:
-    prevshifts_json = commentjson.load(json_file)
-
-  # will load the input data
-  with open(players_file, "r") as f:
-    for l in f:
-      # skip comments or blank lines
-      if l.count('#') > 0 or len(l.strip()) <= 0:
-        continue
-      parts = l.strip().split(',')
-      name = parts[1].strip()
-      number = parts[0].strip()
-      players.append(Player(name, number))
-
-  run_fairplay_algo(players_file, stronglines_file, prevshifts_file)
-
-
-if __name__ == '__main__':
-  main()

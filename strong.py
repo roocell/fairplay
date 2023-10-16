@@ -8,24 +8,23 @@ enabled = True
 
 # each line in the files contains a list of players
 # this function will return a list of groups of Players
-def load(players, stronglines_file):
+def load(players, stronglines_json):
   stronglines = []
 
-  # will load the input data
-  with open(stronglines_file, "r") as f:
-    for l in f:
-      # skip comments, blank lines
-      if l.count('#') > 0 or len(l.strip()) <= 0:
-        continue
-      names = l.strip().split(',')
-      group = []
-
-      # strip any whitespace
-      for n in names:
-        n = n.strip()
-        p = player.find(players, n)
+  # load into an array stronglines
+  # array of sets of Players
+  for sl in stronglines_json:
+    group = []
+    for name in sl:
+      p = player.find(players, name)
+      if (p == None):
+        log.debug(f"couldn't find player {name}")
+        # this can happen if a player is on a strongline, but has been removed from the game
+        # just leave them out of the strongline
+      else:
         group.append(p)
-      stronglines.append(group)
+    stronglines.append(group)
+  print(stronglines)
   return stronglines
 
 
