@@ -13,8 +13,8 @@
 # this is the order in which you'll decide which lines
 # end up with more shifts
 
-{
+[
   ["Ben Larocque", "Wes Frechette", "Blake Turcotte"],
-  ["Alex Panagakos", "Zachary Shouldice Russell", "Martin Leclair"]
-  // ["Lorenzo Braganza", "Amani Tshepelayi Kabata", "Jageer Hundal"]
-}
+  ["Alex Panagakos", "Zachary Shouldice Russell", "Martin Leclair"],
+  // ["Lorenzo Braganza", "Amani Tshepelayi Kabata", "Jageer Hundal"],
+]

@@ -1,43 +1,98 @@
 <!DOCTYPE html>
+<!-- kudos to https://github.com/TomIsLoading/drag-and-drop-kanban to get us started -->
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Fairplay</title>
-    <!-- Link to the external CSS file -->
-    <link rel="stylesheet" href="/static/styles.css">
-</head>
-<body>
-    <header>
-        <img src="/static/bluedevils.png" alt="Blue Devils Logo">
-        <h1>U11 Nepean Bluedevils Fairplay</h1>
-    </header>
-    <div class="content">
 
-      <table>
-        <thead>
-          <tr>
-              <th>Name</th>
-              <th>Minutes</th>
-          </tr>
-        </thead>
-        <tbody>
-            {% for player in players %}
-            <tr>
-                <td>{{ player.name }}</td>
-                <td>{{ player.minutes }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-      </table>
-      <form method="get" action="/groups">
-          <button class="fairplay-button" type="submit">Gen Fairplay lines</button>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="drag.js" defer></script>
+    <script src="player.js" defer></script>
+  </head>
+  <body>
+    <div class="board">
+      <form id="player-form">
+        <input type="text" placeholder="New Player..." id="player-input" />
+        <button type="submit">Add +</button>
+        <button>Run Fairplay</button>
       </form>
-  
-      
 
+      <div class="lanes">
+        <div class="shift" id="shift1">
+          <h3 class="heading">Shift1</h3>
+          <p class="player" draggable="true">Zachary Shouldice Russell</p>
+          <p class="player" draggable="true">Julian Poblete</p>
+          <p class="player" draggable="true">Sebastien Clersaint</p>
+          <p class="player" draggable="true">Alex Panagakos</p>
+          <p class="player" draggable="true">Iseoluwa Ola</p>
+        </div>
+
+        <div class="shift">
+          <h3 class="heading">Shift2</h3>
+            <p class="player" draggable="true">Martin Leclair</p>
+            <p class="player" draggable="true">Jageer Hundal</p>
+            <p class="player" draggable="true">Ben Lim</p>
+            <p class="player" draggable="true">Lorenzo Braganza</p>
+            <p class="player" draggable="true">Hayden Brennan</p>
+        </div>
+
+        <div class="shift">
+          <h3 class="heading">Shift3</h3>
+          <p class="player" draggable="true">Blake Turcotte</p>
+          <p class="player" draggable="true">Wes Frechette</p>
+          <p class="player" draggable="true">Ben Larocque</p>
+          <p class="player" draggable="true">Amani Tshepelayi Kabata</p>
+          <p class="player" draggable="true">Oliver Jeglic</p>
+        </div>
+
+        <div class="shift">
+          <h3 class="heading">Shift4</h3>
+          <p class="player" draggable="true">Blake Turcotte</p>
+          <p class="player" draggable="true">Wes Frechette</p>
+          <p class="player" draggable="true">Ben Larocque</p>
+          <p class="player" draggable="true">Amani Tshepelayi Kabata</p>
+          <p class="player" draggable="true">Oliver Jeglic</p>
+        </div>
+
+        <div class="shift">
+          <h3 class="heading">Shift5</h3>
+          <p class="player" draggable="true">Blake Turcotte</p>
+          <p class="player" draggable="true">Wes Frechette</p>
+          <p class="player" draggable="true">Ben Larocque</p>
+          <p class="player" draggable="true">Amani Tshepelayi Kabata</p>
+          <p class="player" draggable="true">Oliver Jeglic</p>
+        </div>
+
+        <div class="shift">
+          <h3 class="heading">Shift6</h3>
+          <p class="player" draggable="true">Blake Turcotte</p>
+          <p class="player" draggable="true">Wes Frechette</p>
+          <p class="player" draggable="true">Ben Larocque</p>
+          <p class="player" draggable="true">Amani Tshepelayi Kabata</p>
+          <p class="player" draggable="true">Oliver Jeglic</p>
+        </div>
+
+        <div class="shift">
+          <h3 class="heading">Shift7</h3>
+          <p class="player" draggable="true">Blake Turcotte</p>
+          <p class="player" draggable="true">Wes Frechette</p>
+          <p class="player" draggable="true">Ben Larocque</p>
+          <p class="player" draggable="true">Amani Tshepelayi Kabata</p>
+          <p class="player" draggable="true">Oliver Jeglic</p>
+        </div>
+
+        <div class="shift">
+          <h3 class="heading">Shift8</h3>
+          <p class="player" draggable="true">Blake Turcotte</p>
+          <p class="player" draggable="true">Wes Frechette</p>
+          <p class="player" draggable="true">Ben Larocque</p>
+          <p class="player" draggable="true">Amani Tshepelayi Kabata</p>
+          <p class="player" draggable="true">Oliver Jeglic</p>
+        </div>
+
+      </div>
     </div>
-</body>
+  </body>
 </html>
-
-
