@@ -1,5 +1,8 @@
 from flask import Flask, render_template, flash, redirect, url_for, request
 import fairplay
+from logger import log as log
+
+# TODO: add flask_socketio if we need async updates to web
 
 app = Flask(
     __name__,
@@ -24,17 +27,13 @@ def home_page():
 
 
 # Define a route to handle form submission
-@app.route('/groups', methods=['GET'])
-def groups():
-  if request.method == 'GET':
-    # Call your function when the form is submitted
-    g = fairplay.get_groups()
-    print(len(g))
-    fairplay.print_groups(g)
-    return render_template(
-        'groups.html',
-        groups=g,
-    )
+@app.route('/updateshifts', methods=['POST'])
+def updateshifts():
+  # take shifts from web and update our local copy
+  data = request.get_json()
+  #log.debug(data)
+  fairplay.updateshiftsfromweb(data)
+  return ({"message": "JSON data received successfully"})
 
 
 if __name__ == '__main__':

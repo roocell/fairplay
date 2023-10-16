@@ -16,7 +16,7 @@ form.addEventListener("submit", (e) => {
   newPlayer.addEventListener("dragstart", () => {
     newPlayer.classList.add("is-dragging");
   });
-
+ 
   newPlayer.addEventListener("dragend", () => {
     newPlayer.classList.remove("is-dragging");
   });

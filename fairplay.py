@@ -17,14 +17,12 @@ import prevshift
 # output
 #   dumps the recommended shifts for the next game
 
-# TODO: input / output should all be JSON - to integrate with web
-
-prevshift_enabled = False
-
 players = []
+stronglines = []
+shifts = []
 
 
-def run_fairplay_algo(players_json, stronglines_json, prevshifts_json):
+def run_fairplay_algo(players, stronglines):
   shifts = get_shifts(players, stronglines)
   print_shifts(shifts)
 
@@ -45,7 +43,7 @@ def load(players_file, stronglines_file, prevshifts_file):
     file_contents = file.read()
   prevshifts_json = commentjson.loads(file_contents)
 
-  global players
+  global players, stronglines
   players = player.load(players_json, prevshifts_json)
   player.dump(players)
 
@@ -53,9 +51,39 @@ def load(players_file, stronglines_file, prevshifts_file):
   #strong.dump(stronglines)
 
 
+def find_player_in_shift(player_name, shift):
+  for p in shift:
+    if p.name == player_name:
+      return p
+  return None
+
+
+# gets called when a player is moved on the web
+# data is a list of dictionaries of players (just names for now)
+def updateshiftsfromweb(data):
+  global shifts, players
+
+  log.debug("updating shifts)")
+  log.debug(data)
+
+  shifts = []  # just recreate shifts based on web data
+  for webshift in data:
+    s = []
+    for pw in webshift:
+      pwname = pw["name"].strip()
+      pp = player.find(players, pwname)
+      if pp == None:
+        log.error(f"could not find player {pwname}")
+      s.append(pp)
+    shifts.append(s)
+
+  print_shifts(shifts)
+
+
 def load_files_and_run(players_file, stronglines_file, prevshifts_file):
-  load(players_json, stronglines_json, prevshifts_json)
-  run_fairplay_algo(players_json, stronglines_json, prevshifts_json)
+  load(players_file, stronglines_file, prevshifts_file)
+  global players, stronglines
+  run_fairplay_algo(players, stronglines)
 
 
 def print_shifts(shifts):

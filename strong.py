@@ -24,7 +24,6 @@ def load(players, stronglines_json):
       else:
         group.append(p)
     stronglines.append(group)
-  print(stronglines)
   return stronglines
 
 

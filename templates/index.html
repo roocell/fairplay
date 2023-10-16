@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="/static/styles.css" />
     <script src="/static/drag.js" defer></script>
     <script src="/static/player.js" defer></script>
+
   </head>
   <body>
     <div class="board">
@@ -24,7 +25,7 @@
           <h3 class="heading">Shift1</h3>
           <!-- by default throw all players into shift1 until the algo is run -->
           {% for player in players %}
-            <p class="player" draggable="true"> {{ player.name }} </p>
+            <p class="player" draggable="true">{{ player.name }}</p>
           
           {% endfor %}
         </div>
