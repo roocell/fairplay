@@ -15,6 +15,8 @@ import player
 # TODO: generate notes under shifts with some explanations like
 #        - 4 players get 2 shifts when there are 15 players.
 # TODO: numbers and shifts as decorations rather than just text
+# TODO: raise a red error div from the top if flask responds with error
+#       like fairplay validation failed
 
 app = Flask(
     __name__,

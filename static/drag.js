@@ -230,18 +230,18 @@ function setupDraggablesAndDroppables()
       const players = shift.querySelectorAll('.player');
       let playerIsDup = false;
       players.forEach((player) => {
-        if (player.id == curPlayer.id)
+        if (player.id == curPlayer.id && player != curPlayer)
         {
           playerIsDup = true;
+          return;
         }
-
       });
-      if (playerIsDup) {
+      if (playerIsDup == true) {
         return;
       }
       
-      const bottomPlayer = insertAbovePlayer(zone, e.clientY);
       //console.log(curPlayer)
+      const bottomPlayer = insertAbovePlayer(zone, e.clientY);
 
       if (!bottomPlayer) {
         zone.appendChild(curPlayer);
