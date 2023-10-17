@@ -15,7 +15,6 @@ import player
 # TODO: generate notes under shifts with some explanations like
 #        - 4 players get 2 shifts when there are 15 players.
 # TODO: numbers and shifts as decorations rather than just text
-# TODO: JS to cancel a drop if there's a duplicate player in the shift
 
 app = Flask(
     __name__,

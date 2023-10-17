@@ -223,9 +223,24 @@ function setupDraggablesAndDroppables()
   droppables.forEach((zone) => {
     zone.addEventListener("dragover", (e) => {
       e.preventDefault();
-  
-      const bottomPlayer = insertAbovePlayer(zone, e.clientY);
       const curPlayer = document.querySelector(".is-dragging");
+
+      // you can't drop an identical player
+      var shift = zone;
+      const players = shift.querySelectorAll('.player');
+      let playerIsDup = false;
+      players.forEach((player) => {
+        if (player.id == curPlayer.id)
+        {
+          playerIsDup = true;
+        }
+
+      });
+      if (playerIsDup) {
+        return;
+      }
+      
+      const bottomPlayer = insertAbovePlayer(zone, e.clientY);
       //console.log(curPlayer)
 
       if (!bottomPlayer) {
