@@ -54,7 +54,7 @@ function updateDomWithShifts(data)
     var playerp = document.createElement("p");
     playerp.classList.add("player");
     playerp.setAttribute("draggable", "true");
-    playerp.innerText = player.name;
+    playerp.id = player.name;
     playerp.innerHTML = player.number + " " + player.name + " " + player.shifts;
     playerp.setAttribute('data-backgroundColor', player.colour);
     rosterdiv.appendChild(playerp);
