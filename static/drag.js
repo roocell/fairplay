@@ -120,12 +120,34 @@ function setupDraggablesAndDroppables()
   draggables.forEach((player) => {
     player.style.backgroundColor = player.getAttribute('data-backgroundColor');
     player.addEventListener("dragstart", () => {
+      if (player.parentElement.id == "roster") {
+          player.dataset.fromRoster = true;
+          // find index of child in parent - so we can clone in same position
+          for (var i = 0; i < player.parentElement.children.length; i++) {
+            if (player.parentElement.children[i] == player) {
+              player.dataset.rosterPosition = i;
+              break;
+            }
+          }
+      } else {
+        player.dataset.fromRoster = false;
+      }
       player.classList.add("is-dragging");
       player.style.backgroundColor = "rgb(50, 50, 50)";
     });
     player.addEventListener("dragend", (event) => {
       player.classList.remove("is-dragging");
       player.style.backgroundColor = player.getAttribute('data-backgroundColor');
+
+      // if it's the roster - clone it so we don't remove it from the roster
+      if (player.dataset.fromRoster == "true") {
+        var rosterdiv = document.getElementById("roster");
+        const playerClone = player.cloneNode(true);
+
+        var referenceElement = rosterdiv.children[player.dataset.rosterPosition];
+        rosterdiv.insertBefore(playerClone, referenceElement);
+      }
+      
       event.preventDefault();
       updateshifts();  
     });
