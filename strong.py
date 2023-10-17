@@ -9,12 +9,14 @@ enabled = True
 # each line in the files contains a list of players
 # this function will return a list of groups of Players
 def load(players, stronglines_json):
+  strongline_colours = ["#f0d5aa", "#cff6ff", "#e1ffcf", "#f1d9ff", "#ffd9d9"]
   stronglines = []
 
   # load into an array stronglines
   # array of sets of Players
   for sl in stronglines_json:
     group = []
+    colour = strongline_colours.pop()
     for name in sl:
       p = player.find(players, name)
       if (p == None):
@@ -22,6 +24,8 @@ def load(players, stronglines_json):
         # this can happen if a player is on a strongline, but has been removed from the game
         # just leave them out of the strongline
       else:
+        # assign a color to the players in this strongline - so they can appear 'together' on web
+        p.colour = colour
         group.append(p)
     stronglines.append(group)
   return stronglines

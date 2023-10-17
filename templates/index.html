@@ -26,7 +26,7 @@
           <div class="shift" id="shift{{ loop.index }}">
             <h3 class="heading">Shift{{ loop.index }}</h3>
               {% for player in shift %}
-                <p class="player" draggable="true" id="{{ player.name }}">{{ player.number }} {{ player.name }}</p>
+                <p class="player" draggable="true" data-backgroundColor="{{ player.colour }}" id="{{ player.name }}">{{ player.number }} {{ player.name }} {{player.shifts}}</p>
               {% endfor %}
           </div>
         {% endfor %}

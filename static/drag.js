@@ -56,11 +56,13 @@ function updateDomWithShifts(data)
       playerp.className = "player";
       playerp.draggable = "true";
       playerp.id = player.name;
-      playerp.innerHTML = player.number + " " + player.name;
+      playerp.innerHTML = player.number + " " + player.name + " " + player.shifts;
+      playerp.setAttribute('data-backgroundColor', player.colour);
       shiftdiv.appendChild(playerp);
     });
     container.appendChild(shiftdiv);
   });
+  setupDraggablesAndDroppables();
 }
 
 function runfairplay()
@@ -88,59 +90,67 @@ function runfairplay()
     });
 }
 
-const draggables = document.querySelectorAll(".player");
-const droppables = document.querySelectorAll(".shift");
-
-draggables.forEach((player) => {
-  player.addEventListener("dragstart", () => {
-    player.classList.add("is-dragging");
-  });
-  player.addEventListener("dragend", (event) => {
-    player.classList.remove("is-dragging");
-    event.preventDefault();
-    updateshifts();  
-  });
-  // tried 'drop' but you can drag your item into a 
-  // list but then mouse our of the list and then the
-  // drop event doesn't trigger
-  // dragend works better
-  //player.addEventListener("drop", (event) => {  
-  //});
-
-});
-
-droppables.forEach((zone) => {
-  zone.addEventListener("dragover", (e) => {
-    e.preventDefault();
-
-    const bottomPlayer = insertAbovePlayer(zone, e.clientY);
-    const curPlayer = document.querySelector(".is-dragging");
-
-    if (!bottomPlayer) {
-      zone.appendChild(curPlayer);
-    } else {
-      zone.insertBefore(curPlayer, bottomPlayer);
-    }
+function setupDraggablesAndDroppables()
+{
+  const draggables = document.querySelectorAll(".player");
+  const droppables = document.querySelectorAll(".shift");
+  
+  draggables.forEach((player) => {
+    player.style.backgroundColor = player.getAttribute('data-backgroundColor');
+    player.addEventListener("dragstart", () => {
+      player.classList.add("is-dragging");
+      player.style.backgroundColor = "rgb(50, 50, 50)";
+    });
+    player.addEventListener("dragend", (event) => {
+      player.classList.remove("is-dragging");
+      player.style.backgroundColor = player.getAttribute('data-backgroundColor');
+      event.preventDefault();
+      updateshifts();  
+    });
+    // tried 'drop' but you can drag your item into a 
+    // list but then mouse our of the list and then the
+    // drop event doesn't trigger
+    // dragend works better
+    //player.addEventListener("drop", (event) => {  
+    //});
   
   });
-});
-
-const insertAbovePlayer = (zone, mouseY) => {
-  const els = zone.querySelectorAll(".player:not(.is-dragging)");
-
-  let closestPlayer = null;
-  let closestOffset = Number.NEGATIVE_INFINITY;
-
-  els.forEach((player) => {
-    const { top } = player.getBoundingClientRect();
-
-    const offset = mouseY - top;
-
-    if (offset < 0 && offset > closestOffset) {
-      closestOffset = offset;
-      closestPlayer = player;
-    }
+  
+  droppables.forEach((zone) => {
+    zone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+  
+      const bottomPlayer = insertAbovePlayer(zone, e.clientY);
+      const curPlayer = document.querySelector(".is-dragging");
+  
+      if (!bottomPlayer) {
+        zone.appendChild(curPlayer);
+      } else {
+        zone.insertBefore(curPlayer, bottomPlayer);
+      }
+    
+    });
   });
+  
+  const insertAbovePlayer = (zone, mouseY) => {
+    const els = zone.querySelectorAll(".player:not(.is-dragging)");
+  
+    let closestPlayer = null;
+    let closestOffset = Number.NEGATIVE_INFINITY;
+  
+    els.forEach((player) => {
+      const { top } = player.getBoundingClientRect();
+  
+      const offset = mouseY - top;
+  
+      if (offset < 0 && offset > closestOffset) {
+        closestOffset = offset;
+        closestPlayer = player;
+      }
+    });
+  
+    return closestPlayer;
+  };
 
-  return closestPlayer;
-};
+}
+setupDraggablesAndDroppables();

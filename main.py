@@ -12,8 +12,9 @@ import player
 # TODO: add flask_wtf if we need to add form validation
 # TODO: add flask_mail if we need to send emails
 # TODO: add flask_bcrypt if we need to hash passwords
-
 # TODO: first list should be roster
+# TODO: generate notes under shifts with some explanations like
+#        - 4 players get 2 shifts when there are 15 players.
 
 app = Flask(
     __name__,

@@ -21,6 +21,7 @@ class Player:
     self.number = number
     self.shifts = 0
     self.prev = 0  # previous shifts
+    self.colour = "white"
 
 
 def load(players_json, prevshift_json):
