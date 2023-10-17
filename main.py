@@ -24,6 +24,15 @@ app = Flask(
 )
 
 
+def generate_json_data():
+  data = {
+      "players": json.dumps(fairplay.players, cls=player.PlayerEncoder),
+      "shifts": json.dumps(fairplay.shifts, cls=player.PlayerEncoder)
+  }
+  #log.debug(data)
+  return data
+
+
 @app.route('/')  # What happens when the user visits the site
 def home_page():
   # run fairplay so we have all the data web the page comes up
@@ -33,11 +42,7 @@ def home_page():
       "test/15p_3sl_0pv/prevshifts.json",
   )
 
-  return render_template(
-      'index.html',  # Template file path, starting from the templates folder. 
-      players=fairplay.players,
-      shifts=fairplay.shifts,
-  )
+  return render_template('index.html')
 
 
 # Define a route to handle form submission
@@ -47,7 +52,21 @@ def updateshifts():
   data = request.get_json()
   #log.debug(data)
   fairplay.updateshiftsfromweb(data)
-  return ({"message": "OK"})
+  # all the smarts are done in python code.
+  # so when a player moves we need to run part of the
+  # fairplay logic and feed back the information back to
+  # the web to be displayed
+  # for example - doubleshifts
+  # this is ok - because we can remove the django code
+  # in index.html - and generate the shifts all in the
+  # same JS code.
+  fairplay.fairplay_validation()
+  return generate_json_data()
+
+
+@app.route('/getdata', methods=['GET'])
+def getdata():
+  return generate_json_data()
 
 
 @app.route('/runfairplay', methods=['GET'])
@@ -59,12 +78,8 @@ def runfairplay():
   # will take player list and run alogorithm
   # returning shifts to web page
   fairplay.run_fairplay_algo(fairplay.players, fairplay.stronglines)
-  data = {
-      "players": json.dumps(fairplay.players, cls=player.PlayerEncoder),
-      "shifts": json.dumps(fairplay.shifts, cls=player.PlayerEncoder)
-  }
-  log.debug(data)
-  return data
+
+  return generate_json_data()
 
 
 if __name__ == '__main__':

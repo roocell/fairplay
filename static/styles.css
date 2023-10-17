@@ -103,6 +103,7 @@
 
   font-size: 16px;
   cursor: move;
+  outline-style: none;
 }
 
 /* TODO: use pseudo classes like below to put decorations on the player box
@@ -114,4 +115,10 @@
   box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.55);
   background: rgb(50, 50, 50);
   color: white;
+}
+
+.is-doubleshift {
+  outline-color: red;
+  outline-width: 3px; 
+  outline-style: solid;
 }

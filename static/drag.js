@@ -19,20 +19,6 @@ function getshifts()
   return data;
 }
 
-function updateshifts()
-{
-  // Make a POST request to your Flask route with the JSON data
-  fetch('/updateshifts', {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(getshifts())
-  }).then(response => {
-      // Handle the response from the server
-  });
-}
-
 function updateDomWithShifts(data)
 {
   console.log(data);
@@ -68,7 +54,8 @@ function updateDomWithShifts(data)
     i++;
     var shiftdiv = document.createElement('div');
     shiftdiv.className = "shift";
-  
+    shiftdiv.id = "shift" + i;
+
     var header = document.createElement('h3');
     header.className = "heading";
     header.innerHTML = "Shift" + i;
@@ -81,6 +68,8 @@ function updateDomWithShifts(data)
       playerp.id = player.name;
       playerp.innerHTML = player.number + " " + player.name + " " + player.shifts;
       playerp.setAttribute('data-backgroundColor', player.colour);
+      playerp.setAttribute('data-doubleshift', player.doubleshifts[i-1]);
+      
       shiftdiv.appendChild(playerp);
     });
     container.appendChild(shiftdiv);
@@ -88,9 +77,59 @@ function updateDomWithShifts(data)
   setupDraggablesAndDroppables();
 }
 
-function runfairplay()
+function updateshifts()
 {
   // Make a POST request to your Flask route with the JSON data
+  fetch('/updateshifts', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(getshifts())
+  }).then(response => {
+        if (response.ok) {
+            // If the response status is in the 200-299 range, it means the request was successful.
+            return response.json(); // Parse the response as JSON
+        } else {
+            // Handle errors or non-successful responses here
+            throw new Error('Request failed with status: ' + response.status);
+        }
+    }).then(data => {
+        // Handle the JSON data received from the server
+        updateDomWithShifts(data);
+    }).catch(error => {
+        // Handle any network or request-related errors here
+        console.error(error);
+    });
+
+}
+
+function getdata()
+{
+  fetch('/getdata', {
+      method: 'GET',
+      headers: {
+          'Content-Type': 'application/json'
+      },
+    }).then(response => {
+        if (response.ok) {
+            // If the response status is in the 200-299 range, it means the request was successful.
+            return response.json(); // Parse the response as JSON
+        } else {
+            // Handle errors or non-successful responses here
+            throw new Error('Request failed with status: ' + response.status);
+        }
+    }).then(data => {
+        // Handle the JSON data received from the server
+        updateDomWithShifts(data);
+    }).catch(error => {
+        // Handle any network or request-related errors here
+        console.error(error);
+    });
+}
+
+function runfairplay()
+{
   fetch('/runfairplay', {
       method: 'GET',
       headers: {
@@ -165,6 +204,12 @@ function setupDraggablesAndDroppables()
   
   draggables.forEach((player) => {
     player.style.backgroundColor = player.getAttribute('data-backgroundColor');
+    if ( player.getAttribute('data-doubleshift') == 1)
+    {
+      player.classList.add("is-doubleshift");
+    } else {
+      player.classList.remove("is-doubleshift");
+    }
     player.addEventListener("dragstart", playerDragStart);
     player.addEventListener("dragend", playerDragEnd);
     // tried 'drop' but you can drag your item into a 
@@ -213,4 +258,3 @@ function setupDraggablesAndDroppables()
   };
 
 }
-setupDraggablesAndDroppables();

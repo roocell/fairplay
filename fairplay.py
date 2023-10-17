@@ -8,6 +8,7 @@ import strong
 import argparse
 import commentjson
 import prevshift
+import double
 
 # input
 # players.txt  - a list of players
@@ -22,15 +23,19 @@ stronglines = []  # an array of an array of Players
 shifts = []  # an array of an array of Players
 
 
-def run_fairplay_algo(players, stronglines):
-  global shifts
-  shifts = get_shifts(players, stronglines)
-  print_shifts(shifts)
-
+def fairplay_validation():
   if verify_shift_limits(len(players), [p.shifts for p in players]):
     log.debug("VERIFICATION PASSED")
 
   verify_unique_players_on_shifts(shifts)
+  double.check_consecutive(players, shifts)
+  #print_shifts(shifts)
+
+
+def run_fairplay_algo(players, stronglines):
+  global shifts
+  shifts = get_shifts(players, stronglines)
+  fairplay_validation()
 
 
 def load(players_file, stronglines_file, prevshifts_file):
@@ -92,6 +97,7 @@ def updateshiftsfromweb(data):
       s.append(pp)
     shifts.append(s)
 
+  double.check_consecutive(players, shifts)
   print_shifts(shifts)
 
 
