@@ -44,6 +44,7 @@ function updateDomWithShifts(data)
   // update the roster in the DOM with the players again
   var rosterdiv = document.createElement('div');
   rosterdiv.className = "shift";
+  rosterdiv.id = "roster";
   var rheader = document.createElement('h3');
   rheader.className = "heading";
   rheader.innerHTML = "Roster";
@@ -112,6 +113,51 @@ function runfairplay()
     });
 }
 
+// need to define the listeners are separate function rather than inline
+// because when we clone a node only intrinsic (set in HTML tag) listeners are copied
+function playerDragStart()
+{
+  var player = this;
+  if (player.parentElement.id == "roster") {
+      player.dataset.fromRoster = true;
+      // find index of child in parent - so we can clone in same position
+      for (var i = 0; i < player.parentElement.children.length; i++) {
+        if (player.parentElement.children[i] == player) {
+          player.dataset.rosterPosition = i;
+          break;
+        }
+      }
+  } else {
+    player.dataset.fromRoster = false;
+  }
+  player.classList.add("is-dragging");
+  player.style.backgroundColor = "rgb(50, 50, 50)";
+  //console.log(player)
+}
+
+function playerDragEnd(event)
+{
+  var player = this;
+  player.classList.remove("is-dragging");
+  player.style.backgroundColor = player.getAttribute('data-backgroundColor');
+
+  // if it's the roster - clone it so we don't remove it from the roster
+  if (player.dataset.fromRoster == "true") {
+    var rosterdiv = document.getElementById("roster");
+    const playerClone = player.cloneNode(true);
+    // need to add the listeners manually on a cloned node
+    // (if not specified instrinicly)
+    playerClone.addEventListener("dragstart", playerDragStart);
+    playerClone.addEventListener("dragend", playerDragEnd);
+
+    var referenceElement = rosterdiv.children[player.dataset.rosterPosition];
+    rosterdiv.insertBefore(playerClone, referenceElement);
+  }
+
+  event.preventDefault();
+  updateshifts();  
+}
+
 function setupDraggablesAndDroppables()
 {
   const draggables = document.querySelectorAll(".player");
@@ -119,45 +165,14 @@ function setupDraggablesAndDroppables()
   
   draggables.forEach((player) => {
     player.style.backgroundColor = player.getAttribute('data-backgroundColor');
-    player.addEventListener("dragstart", () => {
-      if (player.parentElement.id == "roster") {
-          player.dataset.fromRoster = true;
-          // find index of child in parent - so we can clone in same position
-          for (var i = 0; i < player.parentElement.children.length; i++) {
-            if (player.parentElement.children[i] == player) {
-              player.dataset.rosterPosition = i;
-              break;
-            }
-          }
-      } else {
-        player.dataset.fromRoster = false;
-      }
-      player.classList.add("is-dragging");
-      player.style.backgroundColor = "rgb(50, 50, 50)";
-    });
-    player.addEventListener("dragend", (event) => {
-      player.classList.remove("is-dragging");
-      player.style.backgroundColor = player.getAttribute('data-backgroundColor');
-
-      // if it's the roster - clone it so we don't remove it from the roster
-      if (player.dataset.fromRoster == "true") {
-        var rosterdiv = document.getElementById("roster");
-        const playerClone = player.cloneNode(true);
-
-        var referenceElement = rosterdiv.children[player.dataset.rosterPosition];
-        rosterdiv.insertBefore(playerClone, referenceElement);
-      }
-      
-      event.preventDefault();
-      updateshifts();  
-    });
+    player.addEventListener("dragstart", playerDragStart);
+    player.addEventListener("dragend", playerDragEnd);
     // tried 'drop' but you can drag your item into a 
     // list but then mouse our of the list and then the
     // drop event doesn't trigger
     // dragend works better
     //player.addEventListener("drop", (event) => {  
     //});
-  
   });
   
   droppables.forEach((zone) => {
@@ -166,7 +181,8 @@ function setupDraggablesAndDroppables()
   
       const bottomPlayer = insertAbovePlayer(zone, e.clientY);
       const curPlayer = document.querySelector(".is-dragging");
-  
+      //console.log(curPlayer)
+
       if (!bottomPlayer) {
         zone.appendChild(curPlayer);
       } else {
