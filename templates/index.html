@@ -21,7 +21,13 @@
       </form>
 
       <div class="lanes" id=container>
-        
+        <div class="shift" id="roster">
+          <h3 class="heading">Roster</h3>
+          {% for player in players %}
+          <p class="player" draggable="true" data-backgroundColor="{{ player.colour }}" id="{{ player.name }}">{{ player.number }} {{ player.name }} {{player.shifts}}</p>
+          {% endfor %}
+        </div>
+
         {% for shift in shifts %}
           <div class="shift" id="shift{{ loop.index }}">
             <h3 class="heading">Shift{{ loop.index }}</h3>

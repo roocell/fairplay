@@ -12,9 +12,11 @@ import player
 # TODO: add flask_wtf if we need to add form validation
 # TODO: add flask_mail if we need to send emails
 # TODO: add flask_bcrypt if we need to hash passwords
-# TODO: first list should be roster
 # TODO: generate notes under shifts with some explanations like
 #        - 4 players get 2 shifts when there are 15 players.
+# TODO: numbers and shifts as decorations rather than just text
+# TODO: JS to cancel a drop if there's a duplicate player in the shift
+# TODO: keep roster the same if a player is dragged out
 
 app = Flask(
     __name__,
@@ -58,9 +60,12 @@ def runfairplay():
   # will take player list and run alogorithm
   # returning shifts to web page
   fairplay.run_fairplay_algo(fairplay.players, fairplay.stronglines)
-  rc = json.dumps(fairplay.shifts, cls=player.PlayerEncoder)
-  log.debug(rc)
-  return rc
+  data = {
+      "players": json.dumps(fairplay.players, cls=player.PlayerEncoder),
+      "shifts": json.dumps(fairplay.shifts, cls=player.PlayerEncoder)
+  }
+  log.debug(data)
+  return data
 
 
 if __name__ == '__main__':

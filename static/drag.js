@@ -40,8 +40,30 @@ function updateDomWithShifts(data)
   // update the DOM with the new shifts
   var container = document.getElementById("container");
   container.innerHTML = "";
+
+  // update the roster in the DOM with the players again
+  var rosterdiv = document.createElement('div');
+  rosterdiv.className = "shift";
+  var rheader = document.createElement('h3');
+  rheader.className = "heading";
+  rheader.innerHTML = "Roster";
+  rosterdiv.appendChild(rheader);
+  
+  var playersData = JSON.parse(data.players);
+  playersData.forEach(function(player) {
+    var playerp = document.createElement("p");
+    playerp.classList.add("player");
+    playerp.setAttribute("draggable", "true");
+    playerp.innerText = player.name;
+    playerp.innerHTML = player.number + " " + player.name + " " + player.shifts;
+    playerp.setAttribute('data-backgroundColor', player.colour);
+    rosterdiv.appendChild(playerp);
+  });
+  container.appendChild(rosterdiv);
+
   var i = 0;
-  data.forEach(function(shift) {
+  var shiftsData = JSON.parse(data.shifts);
+  shiftsData.forEach(function(shift) {
     i++;
     var shiftdiv = document.createElement('div');
     shiftdiv.className = "shift";

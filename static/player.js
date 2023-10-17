@@ -1,6 +1,6 @@
 const form = document.getElementById("player-form");
 const input = document.getElementById("player-input");
-const shift1Lane = document.getElementById("shift1");
+const rosterLane = document.getElementById("roster");
 
 form.addEventListener("submit", (e) => {
   e.preventDefault();
@@ -21,7 +21,7 @@ form.addEventListener("submit", (e) => {
     newPlayer.classList.remove("is-dragging");
   });
 
-  shift1Lane.appendChild(newPlayer);
+    rosterLane.appendChild(newPlayer);
 
   input.value = "";
 });

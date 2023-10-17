@@ -51,10 +51,9 @@ def load(players_file, stronglines_file, prevshifts_file):
   stronglines = strong.load(players, stronglines_json)
   #strong.dump(stronglines)
 
-  # default the shifts to all players in first shift
-  shifts.append(players)
-  for i in range(7):
-    shifts.append([])  # fill in 7 more empty lines
+  # default some empty shifts so they get drawn in web
+  for i in range(8):
+    shifts.append([])
 
 
 def find_player_in_shift(player_name, shift):
@@ -79,8 +78,12 @@ def updateshiftsfromweb(data):
   log.debug(data)
 
   shifts = []  # just recreate shifts based on web data
-  for webshift in data:
+
+  for i, webshift in enumerate(data, start=1):
+    if i == 1:  # first list is the roster - skip it
+      continue
     s = []
+    log.debug(webshift)
     for pw in webshift:
       pwname = pw["name"].strip()
       pp = player.find(players, pwname)
