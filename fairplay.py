@@ -22,6 +22,10 @@ players = []  # an array of Players
 stronglines = []  # an array of an array of Players
 shifts = []  # an array of an array of Players
 
+# default some empty shifts so they get drawn in web very first time
+for i in range(8):
+  shifts.append([])
+
 
 def fairplay_validation():
   if verify_shift_limits(len(players), [p.shifts for p in players]):
@@ -34,6 +38,7 @@ def fairplay_validation():
 
 def run_fairplay_algo(players, stronglines):
   global shifts
+  shifts = []
   shifts = get_shifts(players, stronglines)
   fairplay_validation()
 
@@ -55,10 +60,6 @@ def load(players_file, stronglines_file, prevshifts_file):
 
   stronglines = strong.load(players, stronglines_json)
   #strong.dump(stronglines)
-
-  # default some empty shifts so they get drawn in web
-  for i in range(8):
-    shifts.append([])
 
 
 def find_player_in_shift(player_name, shift):
