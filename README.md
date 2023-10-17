@@ -3,8 +3,11 @@ takes a list of players, their previous shifts played and determines shifts for 
 a list of group of players that you want to keep together (stronglines) can optionally be used to build your shifts.
 
 # installation
+Requires recent version of flask.
+```
 pip3 install commentjson
 pip3 install flask
+```
 
 # command line instructions
 This will run through a series of tests.
