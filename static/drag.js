@@ -1,4 +1,17 @@
 
+function ifTouchInDroppable(touch, droppable)
+{
+  if (
+    touch.clientX > droppable.getBoundingClientRect().left &&
+    touch.clientX < droppable.getBoundingClientRect().right &&
+    touch.clientY > droppable.getBoundingClientRect().top &&
+    touch.clientY < droppable.getBoundingClientRect().bottom
+  ) {
+    return true;
+  }
+  return false;
+}
+
 function playerTouchStart(e)
 {
   try {
@@ -9,8 +22,8 @@ function playerTouchStart(e)
   
     // Get the initial touch position
     const touch = e.changedTouches[0];
-    const offsetX = touch.clientX - 30;
-    const offsetY = touch.clientY - 30;
+    const offsetX = touch.clientX - 50;
+    const offsetY = touch.clientY - 50;
   
     playerDragStart(player, e);
   
@@ -18,6 +31,7 @@ function playerTouchStart(e)
     // of the element that gets dragged around - we need
     // to mimic that behavior on mobile by cloning it for 
     // dragging
+    // clone it after playerDragStart() so it has that dragging style
     playerDragClone = player.cloneNode(true);
     playerDragClone.addEventListener("touchend", playerTouchEnd);
 
@@ -26,8 +40,8 @@ function playerTouchStart(e)
     // property will affect things
     // but the roster is special because when we drop there - we don't really
     // drop it there. a clone is always placed there.
-    //var rosterdiv = document.getElementById("roster");
-    //rosterdiv.appendChild(playerDragClone);
+    var rosterdiv = document.getElementById("roster");
+    rosterdiv.appendChild(playerDragClone);
 
     
     // Move the player element with the touch
@@ -45,17 +59,25 @@ function playerTouchStart(e)
         // blocks and do things here too.
         const droppables = document.querySelectorAll(".shift");
         droppables.forEach((droppable) => {
-          if (
-            touch.clientX > droppable.getBoundingClientRect().left &&
-            touch.clientX < droppable.getBoundingClientRect().right &&
-            touch.clientY > droppable.getBoundingClientRect().top &&
-            touch.clientY < droppable.getBoundingClientRect().bottom
-          ) {
+          if (ifTouchInDroppable(touch, droppable))
+          {
             // The draggable element is dropped inside the droppable area
             dragOverBehavior(droppable, touch.clientY);
           }
         });
-  
+        // also need to consider the roster droppable
+        var roster = document.getElementById("roster");
+        if (ifTouchInDroppable(touch, roster))
+        {
+          // add to roster but hide
+          roster.appendChild(player);
+          playerDragClone.style.visbility = "hidden";
+          playerDragClone.dataset.droppingIntoRoster = true;
+        } else if (playerDragClone.dataset.droppingIntoRoster) {
+          // if we were in the roster, but leaving
+          playerDragClone.style.visbility = "visible";
+          playerDragClone.dataset.droppingIntoRoster = false;
+        }
       }
     });
   } catch (error) {
@@ -102,29 +124,28 @@ function playerDragEnd(player, e)
 {
   player.classList.remove("is-dragging");
 
-  if (player!== null && player.parentNode !== null)
-  {
-    if (player.parentNode.id !== "roster")
-    {
-      player.parentNode.removeChild(player);
-    }
-  }
-
   player.style.backgroundColor = player.getAttribute('data-backgroundColor');
 
+  var droppingIntoRoster = false;
+  var rosterdiv = document.getElementById("roster");
+  if (player.parentNode == rosterdiv)
+  {
+      droppingIntoRoster = true;
+  }
+  
   // if it's the roster - clone it so we don't remove it from the roster
-  if (player.dataset.fromRoster == "true") {
+  // we don't do this on touch events (before there we've cloned a drag object instead)
+  if (!droppingIntoRoster && player.dataset.fromRoster == "true" && e.touches == undefined) {
     const playerClone = player.cloneNode(true);
     // need to add the listeners manually on a cloned node
     // (if not specified instrinicly)
     addListeners(playerClone);
 
-    var rosterdiv = document.getElementById("roster");
     var referenceElement = rosterdiv.children[player.dataset.rosterPosition];
     rosterdiv.insertBefore(playerClone, referenceElement);
   }
 
-  event.preventDefault();
+  e.preventDefault();
   updateshifts();  
 }
 
@@ -151,7 +172,7 @@ function addListeners(player)
 function dragOverBehavior(droppable, clientY)
 {
   const curPlayer = document.querySelector(".is-dragging");
-
+  
   // you can't drop an identical player
   var shift = droppable;
   const players = shift.querySelectorAll('.player');
@@ -233,32 +254,47 @@ function setupDraggablesAndDroppables()
 
   // make roster a dropable - but it'll act differently and consume the player (like a delete)
   const roster = document.getElementById("roster");
-  roster.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    const curPlayer = document.querySelector(".is-dragging");
+  if (roster != null) // an inital load roster isn't there yet. not until we retrieve the data.
+  {
+    roster.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      const curPlayer = document.querySelector(".is-dragging");
 
-    // TODO: apparently the drag image can only be changed on drag start
-    // not on dragover on another element.
-    // apparently this can't be done due to security reasons?
-    // https://stackoverflow.com/questions/48212718/how-to-change-icon-during-dragover-dragenter-html-5-drag-and-drop
-    //const dragImage = document.getElementById('delete-icon');
-    //e.dataTransfer.setDragImage(dragImage, 0, 0);
-    // const dragImage = new Image();
-    // dragImage.src = '/static/delete.png';
-    // e.dataTransfer.setDragImage(dragImage, 0, 0);
-
-    // add to roster - but hidden - so the object still exists if user
-    // drags back to another shift
-    var roster = document.getElementById("roster");
-    roster.appendChild(curPlayer);
-    curPlayer.style.display = none;
-
-    // if it's in the roster at drag end - it will be deleted
-  });  
-  roster.addEventListener("dragleave", (e) => {
-    e.preventDefault();
-    const curPlayer = document.querySelector(".is-dragging");
-    curPlayer.style.display = blocking;
-  });  
+      // remove the cloned player from the roster
+      // so it looks like we're putting it back
+      const players = roster.querySelectorAll('.player');
+        players.forEach((player) => {
+        if (player.id == curPlayer.id && player != curPlayer)
+        {
+          roster.removeChild(player);
+        }
+      });
+      
+      dragOverBehavior(roster,  e.clientY);
+      // TODO: apparently the drag image can only be changed on drag start
+      // not on dragover on another element.
+      // apparently this can't be done due to security reasons?
+      // https://stackoverflow.com/questions/48212718/how-to-change-icon-during-dragover-dragenter-html-5-drag-and-drop
+      //const dragImage = document.getElementById('delete-icon');
+      //e.dataTransfer.setDragImage(dragImage, 0, 0);
+      // const dragImage = new Image();
+      // dragImage.src = '/static/delete.png';
+      // e.dataTransfer.setDragImage(dragImage, 0, 0);
+  
+      // add to roster - but hidden - so the object still exists if user
+      // drags back to another shift
+      // var roster = document.getElementById("roster");
+      // roster.appendChild(curPlayer);
+      // curPlayer.style.visibility = 'hidden';
+  
+      // if it's in the roster at drag end - it will be deleted
+  
+    });  
+    roster.addEventListener("dragleave", (e) => {
+      e.preventDefault();
+      // const curPlayer = document.querySelector(".is-dragging");
+      // curPlayer.style.visibility = 'visible';
+    });  
+  }
 
 }
