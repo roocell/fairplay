@@ -41,6 +41,7 @@ function updateDomWithShifts(data)
     var playerp = document.createElement("p");
     playerp.classList.add("player");
     playerp.setAttribute("draggable", "true");
+    playerp.setAttribute("isDragging", "false");
     playerp.id = player.name;
     playerp.innerHTML = player.number + " " + player.name + " " + player.shifts;
     playerp.setAttribute('data-backgroundColor', player.colour);
@@ -152,11 +153,88 @@ function runfairplay()
     });
 }
 
-// need to define the listeners are separate function rather than inline
-// because when we clone a node only intrinsic (set in HTML tag) listeners are copied
-function playerDragStart()
+function playerTouchStart(e)
+{
+  try {
+    var player = this;
+    // have to move the player div manually on mobile
+    e.preventDefault(); // Prevent default touch events (e.g., scrolling)
+    player.setAttribute('isDragging', "true");
+  
+    // Get the initial touch position
+    const touch = e.changedTouches[0];
+    const offsetX = touch.clientX - 30;
+    const offsetY = touch.clientY - 30;
+  
+    playerDragStart(player, e);
+  
+    // the 'drag' behavior automatically creates a clone
+    // of the element that gets dragged around - we need
+    // to mimic that behavior on mobile by cloning it for 
+    // dragging
+    playerDragClone = player.cloneNode(true);
+    playerDragClone.addEventListener("touchend", playerTouchEnd);
+
+    // add the clone to the roster - so it appears
+    // we don't want to add it just any shift because the .is_dragging
+    // property will affect things
+    // but the roster is special because when we drop there - we don't really
+    // drop it there. a clone is always placed there.
+    //var rosterdiv = document.getElementById("roster");
+    //rosterdiv.appendChild(playerDragClone);
+
+    
+    // Move the player element with the touch
+    window.addEventListener('touchmove', (e) => {
+      if (player.getAttribute('isDragging') == "true") {
+        e.preventDefault(); // Prevent default touchmove events
+        const touch = e.changedTouches[0];
+        const x = touch.clientX - offsetX;
+        const y = touch.clientY - offsetY;
+        
+        playerDragClone.style.transform = `translate(${x}px, ${y}px)`;
+  
+        // for mobile (touch) the hover event doesn't work either
+        // so we need to track over to see if it's hovering over the shift
+        // blocks and do things here too.
+        const droppables = document.querySelectorAll(".shift");
+        droppables.forEach((droppable) => {
+          if (
+            touch.clientX > droppable.getBoundingClientRect().left &&
+            touch.clientX < droppable.getBoundingClientRect().right &&
+            touch.clientY > droppable.getBoundingClientRect().top &&
+            touch.clientY < droppable.getBoundingClientRect().bottom
+          ) {
+            // The draggable element is dropped inside the droppable area
+            dragOverBehavior(droppable, touch.clientY);
+          }
+        });
+  
+      }
+    });
+  } catch (error) {
+    window.alert(`An error occurred: ${error.message}`);
+  }
+}
+function playerTouchEnd(e)
 {
   var player = this;
+  var isDragging = player.getAttribute('isDragging')
+  if (isDragging == "true") {
+    player.setAttribute("isDragging", "false");
+    window.removeEventListener('touchmove', null);
+    window.removeEventListener('touchend', null);
+
+    // Reset the player element's position
+    player.style.transform = 'translate(0, 0)';
+  }
+  playerDragEnd(player, e);
+}
+
+// need to define the listeners are separate function rather than inline
+// because when we clone a node only intrinsic (set in HTML tag) listeners are copied
+function playerDragStart(player, e)
+{
   if (player.parentElement.id == "roster") {
       player.dataset.fromRoster = true;
       // find index of child in parent - so we can clone in same position
@@ -174,21 +252,19 @@ function playerDragStart()
   //console.log(player)
 }
 
-function playerDragEnd(event)
+function playerDragEnd(player, e)
 {
-  var player = this;
   player.classList.remove("is-dragging");
   player.style.backgroundColor = player.getAttribute('data-backgroundColor');
 
   // if it's the roster - clone it so we don't remove it from the roster
   if (player.dataset.fromRoster == "true") {
-    var rosterdiv = document.getElementById("roster");
     const playerClone = player.cloneNode(true);
     // need to add the listeners manually on a cloned node
     // (if not specified instrinicly)
-    playerClone.addEventListener("dragstart", playerDragStart);
-    playerClone.addEventListener("dragend", playerDragEnd);
+    addListeners(playerClone);
 
+    var rosterdiv = document.getElementById("roster");
     var referenceElement = rosterdiv.children[player.dataset.rosterPosition];
     rosterdiv.insertBefore(playerClone, referenceElement);
   }
@@ -196,6 +272,75 @@ function playerDragEnd(event)
   event.preventDefault();
   updateshifts();  
 }
+
+// have to create event functions so i can call playerDragStart() 
+// from both drag and touch events
+function playerDragStartEvent(e)
+{
+  var player = this;
+  playerDragStart(player, e)
+}
+function playerDragEndEvent(e)
+{
+  var player = this;
+  playerDragEnd(player, e)
+}
+function addListeners(player)
+{
+  player.addEventListener("dragstart", playerDragStartEvent);
+  player.addEventListener("dragend", playerDragEndEvent);
+  player.addEventListener("touchstart", playerTouchStart);
+  player.addEventListener("touchend", playerTouchEnd);
+}
+
+function dragOverBehavior(droppable, clientY)
+{
+  const curPlayer = document.querySelector(".is-dragging");
+
+  // you can't drop an identical player
+  var shift = droppable;
+  const players = shift.querySelectorAll('.player');
+  let playerIsDup = false;
+  players.forEach((player) => {
+    if (player.id == curPlayer.id && player != curPlayer)
+    {
+      playerIsDup = true;
+      return;
+    }
+  });
+  if (playerIsDup == true) {
+    return;
+  }
+
+  //console.log(curPlayer)
+  const bottomPlayer = insertAbovePlayer(droppable, clientY);
+
+  if (!bottomPlayer) {
+      droppable.appendChild(curPlayer);
+  } else {
+      droppable.insertBefore(curPlayer, bottomPlayer);
+  }
+}
+
+const insertAbovePlayer = (droppable, mouseY) => {
+  const els = droppable.querySelectorAll(".player:not(.is-dragging)");
+
+  let closestPlayer = null;
+  let closestOffset = Number.NEGATIVE_INFINITY;
+
+  els.forEach((player) => {
+    const { top } = player.getBoundingClientRect();
+
+    const offset = mouseY - top;
+
+    if (offset < 0 && offset > closestOffset) {
+      closestOffset = offset;
+      closestPlayer = player;
+    }
+  });
+
+  return closestPlayer;
+};
 
 function setupDraggablesAndDroppables()
 {
@@ -210,8 +355,9 @@ function setupDraggablesAndDroppables()
     } else {
       player.classList.remove("is-doubleshift");
     }
-    player.addEventListener("dragstart", playerDragStart);
-    player.addEventListener("dragend", playerDragEnd);
+    addListeners(player);
+
+    
     // tried 'drop' but you can drag your item into a 
     // list but then mouse our of the list and then the
     // drop event doesn't trigger
@@ -220,56 +366,13 @@ function setupDraggablesAndDroppables()
     //});
   });
   
-  droppables.forEach((zone) => {
-    zone.addEventListener("dragover", (e) => {
+  droppables.forEach((droppable) => {
+    droppable.addEventListener("dragover", (e) => {
       e.preventDefault();
-      const curPlayer = document.querySelector(".is-dragging");
-
-      // you can't drop an identical player
-      var shift = zone;
-      const players = shift.querySelectorAll('.player');
-      let playerIsDup = false;
-      players.forEach((player) => {
-        if (player.id == curPlayer.id && player != curPlayer)
-        {
-          playerIsDup = true;
-          return;
-        }
-      });
-      if (playerIsDup == true) {
-        return;
-      }
-      
-      //console.log(curPlayer)
-      const bottomPlayer = insertAbovePlayer(zone, e.clientY);
-
-      if (!bottomPlayer) {
-        zone.appendChild(curPlayer);
-      } else {
-        zone.insertBefore(curPlayer, bottomPlayer);
-      }
+      dragOverBehavior(droppable, e.clientY);
     
     });
   });
   
-  const insertAbovePlayer = (zone, mouseY) => {
-    const els = zone.querySelectorAll(".player:not(.is-dragging)");
-  
-    let closestPlayer = null;
-    let closestOffset = Number.NEGATIVE_INFINITY;
-  
-    els.forEach((player) => {
-      const { top } = player.getBoundingClientRect();
-  
-      const offset = mouseY - top;
-  
-      if (offset < 0 && offset > closestOffset) {
-        closestOffset = offset;
-        closestPlayer = player;
-      }
-    });
-  
-    return closestPlayer;
-  };
 
 }

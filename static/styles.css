@@ -104,6 +104,9 @@
   font-size: 16px;
   cursor: move;
   outline-style: none;
+
+  touch-action: none; /* Prevent default touch behavior */
+  user-drag: none; /* Disable user-drag for older browsers */
 }
 
 /* TODO: use pseudo classes like below to put decorations on the player box
