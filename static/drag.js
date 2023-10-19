@@ -101,6 +101,15 @@ function playerDragStart(player, e)
 function playerDragEnd(player, e)
 {
   player.classList.remove("is-dragging");
+
+  if (player!== null && player.parentNode !== null)
+  {
+    if (player.parentNode.id !== "roster")
+    {
+      player.parentNode.removeChild(player);
+    }
+  }
+
   player.style.backgroundColor = player.getAttribute('data-backgroundColor');
 
   // if it's the roster - clone it so we don't remove it from the roster
@@ -238,16 +247,18 @@ function setupDraggablesAndDroppables()
     // dragImage.src = '/static/delete.png';
     // e.dataTransfer.setDragImage(dragImage, 0, 0);
 
-    // remove from the shift it was in
-    if (curPlayer!== null && curPlayer.parentNode !== null)
-    {
-      if (curPlayer.parentNode.id !== "roster")
-      {
-        curPlayer.classList.remove("is-dragging");
-        curPlayer.parentNode.removeChild(curPlayer);
-      }
-    }
+    // add to roster - but hidden - so the object still exists if user
+    // drags back to another shift
+    var roster = document.getElementById("roster");
+    roster.appendChild(curPlayer);
+    curPlayer.style.display = none;
 
+    // if it's in the roster at drag end - it will be deleted
+  });  
+  roster.addEventListener("dragleave", (e) => {
+    e.preventDefault();
+    const curPlayer = document.querySelector(".is-dragging");
+    curPlayer.style.display = blocking;
   });  
 
 }
