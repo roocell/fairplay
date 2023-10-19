@@ -1,157 +1,3 @@
-function getshifts()
-{
-  var data = new Array();
-
-  // build data of the shifts on screen
-  // to send back to python
-  var shifts = document.querySelectorAll(".shift");
-  shifts.forEach(function(shift) {
-    // inside each shift is a player class
-    var parray = new Array();
-    var players = shift.querySelectorAll(".player");
-        players.forEach(function(player) {
-          parray.push({
-            "name" : player.id
-              })
-        });
-    data.push(parray)
-  });
-  return data;
-}
-
-function updateDomWithShifts(data)
-{
-  console.log(data);
-
-  // update the DOM with the new shifts
-  var container = document.getElementById("container");
-  container.innerHTML = "";
-
-  // update the roster in the DOM with the players again
-  var rosterdiv = document.createElement('div');
-  rosterdiv.className = "shift";
-  rosterdiv.id = "roster";
-  var rheader = document.createElement('h3');
-  rheader.className = "heading";
-  rheader.innerHTML = "Roster";
-  rosterdiv.appendChild(rheader);
-  
-  var playersData = JSON.parse(data.players);
-  playersData.forEach(function(player) {
-    var playerp = document.createElement("p");
-    playerp.classList.add("player");
-    playerp.setAttribute("draggable", "true");
-    playerp.setAttribute("isDragging", "false");
-    playerp.id = player.name;
-    playerp.innerHTML = player.number + " " + player.name + " " + player.shifts;
-    playerp.setAttribute('data-backgroundColor', player.colour);
-    rosterdiv.appendChild(playerp);
-  });
-  container.appendChild(rosterdiv);
-
-  var i = 0;
-  var shiftsData = JSON.parse(data.shifts);
-  shiftsData.forEach(function(shift) {
-    i++;
-    var shiftdiv = document.createElement('div');
-    shiftdiv.className = "shift";
-    shiftdiv.id = "shift" + i;
-
-    var header = document.createElement('h3');
-    header.className = "heading";
-    header.innerHTML = "Shift" + i;
-    shiftdiv.appendChild(header);
-    
-    shift.forEach(function(player) {
-      var playerp = document.createElement('p');
-      playerp.className = "player";
-      playerp.draggable = "true";
-      playerp.id = player.name;
-      playerp.innerHTML = player.number + " " + player.name + " " + player.shifts;
-      playerp.setAttribute('data-backgroundColor', player.colour);
-      playerp.setAttribute('data-doubleshift', player.doubleshifts[i-1]);
-      
-      shiftdiv.appendChild(playerp);
-    });
-    container.appendChild(shiftdiv);
-  });
-  setupDraggablesAndDroppables();
-}
-
-function updateshifts()
-{
-  // Make a POST request to your Flask route with the JSON data
-  fetch('/updateshifts', {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(getshifts())
-  }).then(response => {
-        if (response.ok) {
-            // If the response status is in the 200-299 range, it means the request was successful.
-            return response.json(); // Parse the response as JSON
-        } else {
-            // Handle errors or non-successful responses here
-            throw new Error('Request failed with status: ' + response.status);
-        }
-    }).then(data => {
-        // Handle the JSON data received from the server
-        updateDomWithShifts(data);
-    }).catch(error => {
-        // Handle any network or request-related errors here
-        console.error(error);
-    });
-
-}
-
-function getdata()
-{
-  fetch('/getdata', {
-      method: 'GET',
-      headers: {
-          'Content-Type': 'application/json'
-      },
-    }).then(response => {
-        if (response.ok) {
-            // If the response status is in the 200-299 range, it means the request was successful.
-            return response.json(); // Parse the response as JSON
-        } else {
-            // Handle errors or non-successful responses here
-            throw new Error('Request failed with status: ' + response.status);
-        }
-    }).then(data => {
-        // Handle the JSON data received from the server
-        updateDomWithShifts(data);
-    }).catch(error => {
-        // Handle any network or request-related errors here
-        console.error(error);
-    });
-}
-
-function runfairplay()
-{
-  fetch('/runfairplay', {
-      method: 'GET',
-      headers: {
-          'Content-Type': 'application/json'
-      },
-    }).then(response => {
-        if (response.ok) {
-            // If the response status is in the 200-299 range, it means the request was successful.
-            return response.json(); // Parse the response as JSON
-        } else {
-            // Handle errors or non-successful responses here
-            throw new Error('Request failed with status: ' + response.status);
-        }
-    }).then(data => {
-        // Handle the JSON data received from the server
-        updateDomWithShifts(data);
-    }).catch(error => {
-        // Handle any network or request-related errors here
-        console.error(error);
-    });
-}
 
 function playerTouchStart(e)
 {
@@ -342,6 +188,7 @@ const insertAbovePlayer = (droppable, mouseY) => {
   return closestPlayer;
 };
 
+
 function setupDraggablesAndDroppables()
 {
   const draggables = document.querySelectorAll(".player");
@@ -373,6 +220,34 @@ function setupDraggablesAndDroppables()
     
     });
   });
-  
+
+
+  // make roster a dropable - but it'll act differently and consume the player (like a delete)
+  const roster = document.getElementById("roster");
+  roster.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    const curPlayer = document.querySelector(".is-dragging");
+
+    // TODO: apparently the drag image can only be changed on drag start
+    // not on dragover on another element.
+    // apparently this can't be done due to security reasons?
+    // https://stackoverflow.com/questions/48212718/how-to-change-icon-during-dragover-dragenter-html-5-drag-and-drop
+    //const dragImage = document.getElementById('delete-icon');
+    //e.dataTransfer.setDragImage(dragImage, 0, 0);
+    // const dragImage = new Image();
+    // dragImage.src = '/static/delete.png';
+    // e.dataTransfer.setDragImage(dragImage, 0, 0);
+
+    // remove from the shift it was in
+    if (curPlayer!== null && curPlayer.parentNode !== null)
+    {
+      if (curPlayer.parentNode.id !== "roster")
+      {
+        curPlayer.classList.remove("is-dragging");
+        curPlayer.parentNode.removeChild(curPlayer);
+      }
+    }
+
+  });  
 
 }

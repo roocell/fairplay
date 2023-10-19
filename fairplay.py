@@ -86,8 +86,6 @@ def updateshiftsfromweb(data):
   shifts = []  # just recreate shifts based on web data
 
   for i, webshift in enumerate(data, start=1):
-    if i == 1:  # first list is the roster - skip it
-      continue
     s = []
     log.debug(webshift)
     for pw in webshift:

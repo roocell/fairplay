@@ -17,6 +17,7 @@ import player
 # TODO: numbers and shifts as decorations rather than just text
 # TODO: raise a red error div from the top if flask responds with error
 #       like fairplay validation failed
+# TODO: change drag image when over roster and when hoving over shift with duplicate player
 
 app = Flask(
     __name__,
