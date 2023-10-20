@@ -19,7 +19,6 @@ import player
 #       like fairplay validation failed
 # TODO: change drag image when over roster and when hoving over shift with duplicate player
 # TODO: dont assert if shift limits are violated when shifts aren't full. Assert isn't feeding back data to web.
-# TODO: move from shift to roster back to shift - roster doens't clone because it's not from roster.
 
 app = Flask(
     __name__,

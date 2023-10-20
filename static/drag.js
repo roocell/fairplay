@@ -102,19 +102,24 @@ function playerTouchEnd(e)
   stopAllScreenScroll();
 }
 
+function applyRosterPlayer(player)
+{
+  player.dataset.fromRoster = true;
+  // find index of child in parent - so we can clone in same position
+  for (var i = 0; i < player.parentElement.children.length; i++) {
+    if (player.parentElement.children[i] == player) {
+      player.dataset.rosterPosition = i;
+      break;
+    }
+  }
+}
+
 // need to define the listeners are separate function rather than inline
 // because when we clone a node only intrinsic (set in HTML tag) listeners are copied
 function playerDragStart(player, e)
 {
   if (player.parentElement.id == "roster") {
-      player.dataset.fromRoster = true;
-      // find index of child in parent - so we can clone in same position
-      for (var i = 0; i < player.parentElement.children.length; i++) {
-        if (player.parentElement.children[i] == player) {
-          player.dataset.rosterPosition = i;
-          break;
-        }
-      }
+    applyRosterPlayer(player);
   } else {
     player.dataset.fromRoster = false;
   }
@@ -198,6 +203,13 @@ function dragOverBehavior(droppable, clientY)
       droppable.appendChild(curPlayer);
   } else {
       droppable.insertBefore(curPlayer, bottomPlayer);
+  }
+
+  // if we're in the roster - it's now a roster player
+  // this addresses a bug with disappearing players
+  // shift->roster->shift.
+  if (droppable.id == "roster") {
+    applyRosterPlayer(curPlayer);
   }
 }
 
