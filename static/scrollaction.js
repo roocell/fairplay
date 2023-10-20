@@ -1,7 +1,7 @@
 /* scroll behavior on mobile (touch) when dragging players */
 
 var thresholdPercentageHorz = 0.10;
-var thresholdPercentageVert = 0.30;
+var thresholdPercentageVert = 0.10;
 var scrollStepSize = 10;
 var scrollTimerDelay = 10;
 var screenScrollHorzTimerId = null;
@@ -21,22 +21,26 @@ function stopScreenScrollHorz() {
   screenScrollHorzTimerId = null;
 }
 
+let doneScrolling = true;
 function startScreenScrollVert(direction) {
 
-  // this kind of works
-  //  window.scrollTo({
-  //    top: document.documentElement.scrollTop + 100*direction,
-  //    behavior: 'smooth' // for smooth scrolling, 'auto' for instant scrolling
-  // });
-  if (screenScrollVertTimerId != null)
+  if (doneScrolling == false)
   {
     return;
   }
+  doneScrolling = false;
+  console.log(Date.now() + "scrolling");
+  //this kind of works
+   window.scrollTo({
+     top: document.documentElement.scrollTop + 200*direction,
+     behavior: 'smooth' // for smooth scrolling, 'auto' for instant scrolling
+  });
+  
   screenScrollVertTimerId = setInterval(function() {
     try {
       // this works but is janky
-      //   document.documentElement.style.transition = 'scrollTop 0.5s ease-in-out';
-      document.documentElement.scrollTop += scrollStepSize*direction;
+      //document.documentElement.style.transition = 'scrollTop 0.5s ease-in-out';
+     // document.documentElement.scrollTop += scrollStepSize*direction;
 
       // this does not scroll at all.
       // var lanes = document.getElementById("lanes");
@@ -44,7 +48,8 @@ function startScreenScrollVert(direction) {
       } catch (error) {
         window.alert(`An error occurred: ${error.message}`);
       }
-  }, scrollTimerDelay); // ms
+      doneScrolling = true;
+  }, 500); // ms
 }
 function stopScreenScrollVert() {
   clearInterval(screenScrollVertTimerId);
@@ -81,9 +86,6 @@ function isTouchLeft(touch)
 function isTouchTop(touch)
 {
   var touchY = touch.clientY;
-  // the min-height we put on lanes in CSS impacts this size
-  // currently 150vh  (150%) ???????????
- 
   var screenHeight = window.innerHeight;
   var threshold = screenHeight*thresholdPercentageVert;
   if (touchY < threshold) {
@@ -97,7 +99,6 @@ function isTouchBottom(touch)
   var touchY = touch.clientY;
   var screenHeight = window.innerHeight;
   var threshold = screenHeight*(1-thresholdPercentageVert);
-  console.log(touchY + " " + threshold)
   if (touchY > threshold) {
     return true;
   }
