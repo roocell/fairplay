@@ -23,6 +23,7 @@ class Player:
     self.prev = 0  # previous shifts
     self.colour = "white"
     self.doubleshifts = [0] * 8  # an array of bools for each shift
+    self.violates = 0  # violates max shifts
 
 
 def load(players_json, prevshift_json):

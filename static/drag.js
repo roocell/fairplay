@@ -267,6 +267,12 @@ function setupDraggablesAndDroppables()
     } else {
       player.classList.remove("is-doubleshift");
     }
+    if ( player.getAttribute('data-violates') == 1)
+    {
+      player.classList.add("is-violates");
+    } else {
+      player.classList.remove("is-violates");
+    }
     addListeners(player);
 
     

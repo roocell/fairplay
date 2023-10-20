@@ -28,7 +28,7 @@ for i in range(8):
 
 
 def fairplay_validation():
-  if verify_shift_limits(len(players), [p.shifts for p in players]):
+  if verify_shift_limits(players, shifts):
     log.debug("VERIFICATION PASSED")
 
   verify_unique_players_on_shifts(shifts)
@@ -112,7 +112,7 @@ def load_files_and_run(players_file, stronglines_file, prevshifts_file):
   load(players_file, stronglines_file, prevshifts_file)
   global players, stronglines
   run_fairplay_algo(players, stronglines)
-  assert_shift_limits(len(players), shifts)
+  assert_shift_limits(players, shifts)
 
 
 def print_shifts(shifts):

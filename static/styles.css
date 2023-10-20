@@ -141,6 +141,12 @@
 
 
 .is-doubleshift {
+  outline-color: orange;
+  outline-width: 3px; 
+  outline-style: solid;
+}
+
+.is-violates {
   outline-color: red;
   outline-width: 3px; 
   outline-style: solid;

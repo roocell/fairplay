@@ -1,4 +1,5 @@
 from logger import log as log
+import player
 
 # every game has players missing
 # this will tell you how many shifts players should get to be fair
@@ -40,30 +41,47 @@ def get_max_shifts(num_players):
   return max
 
 
-# shift_list is an array of integers that represents
-# the shifts for the players
-def verify_shift_limits(num_players, shift_list):
+def check_shift_limits(players, shifts, logvsassert):
+  shift_list = [p.shifts for p in players]
+  num_players = len(players)
+
   # count how many of each we have
   cnts = dict()
   for c in range(2, 9):
     cnts[c] = shift_list.count(c)
 
+  max_shifts = 0
   for t in shift_numbers[num_players]:
+    if t[0] > max_shifts:
+      max_shifts = t[0]
     if cnts[t[0]] != t[1]:
-      log.error( \
-      f"ERROR filled shifts do not comply to shift limits " + \
-      f"num_players:{num_players} {t[0]},{t[1]} -> ERROR {cnts[t[0]]} players with {t[0]} shifts")
+      if logvsassert == "log":
+        log.error( \
+          f"ERROR filled shifts do not comply to shift limits " + \
+          f"num_players:{num_players} {t[0]},{t[1]} -> ERROR {cnts[t[0]]} players with {t[0]} shifts")
+      else:
+        assert cnts[t[0]] == t[1],  \
+          f"ERROR filled shifts do not comply to shift limits " + \
+          f"num_players:{num_players} {t[0]},{t[1]} -> ERROR {cnts[t[0]]} players with {t[0]} shifts"
+
+  # check if any player exceed max shifts
+  for p in players:
+    p.violates = 0
+    if p.shifts > max_shifts:
+      p.violates = 1
+      if logvsassert == "log":
+        log.error( \
+          f"ERROR player {p.name} exceeds max shifts {p.shifts} > {max_shifts}")
+      else:
+        assert p.shifts <= max_shifts, \
+          f"ERROR player {p.name} exceeds max shifts {p.shifts} > {max_shifts}"
+
   return True
 
 
-def assert_shift_limits(num_players, shift_list):
-  # count how many of each we have
-  cnts = dict()
-  for c in range(2, 9):
-    cnts[c] = shift_list.count(c)
+def verify_shift_limits(players, shifts):
+  return check_shift_limits(players, shifts, "log")
 
-  for t in shift_numbers[num_players]:
-    assert cnts[t[0]] == t[1],  \
-      f"ERROR filled shifts do not comply to shift limits " + \
-      f"num_players:{num_players} {t[0]},{t[1]} -> ERROR {cnts[t[0]]} players with {t[0]} shifts"
-  return True
+
+def assert_shift_limits(players, shifts):
+  return check_shift_limits(players, shifts, "assert")

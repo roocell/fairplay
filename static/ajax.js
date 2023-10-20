@@ -88,7 +88,8 @@ function updateDomWithShifts(data)
       playerp.innerHTML = player.number + " " + player.name + " " + player.shifts;
       playerp.setAttribute('data-backgroundColor', player.colour);
       playerp.setAttribute('data-doubleshift', player.doubleshifts[i-1]);
-      
+      playerp.setAttribute('data-violates', player.violates);
+
       shiftdiv.appendChild(playerp);
     });
     if (i >=1 && i <= 4)
