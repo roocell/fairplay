@@ -45,7 +45,8 @@ function playerTouchStart(e)
     
     // Move the player element with the touch
     window.addEventListener('touchmove', (e) => {
-      if (player.getAttribute('isDragging') == "true") {
+      try {
+        if (player.getAttribute('isDragging') == "true") {
         e.preventDefault(); // Prevent default touchmove events
         const touch = e.changedTouches[0];
         const x = touch.clientX - offsetX;
@@ -64,15 +65,23 @@ function playerTouchStart(e)
             dragOverBehavior(droppable, touch.clientY);
           }
         });
+        
         // also need to consider the roster droppable
         var roster = document.getElementById("roster");
         if (ifTouchInDroppable(touch, roster))
         {
           rosterDragOverBehavior(roster, touch.clientY);
-        } else if (playerDragClone.dataset.droppingIntoRoster) {
-        }
+        }// else if (playerDragClone.dataset.droppingIntoRoster) {
+        //}
+
+        processScrollAction(touch);
+
       }
-    });
+    // every function needs this if you want to catch JS errors on ios
+    } catch (error) {
+      window.alert(`An error occurred: ${error.message}`);
+    }
+  });
   } catch (error) {
     window.alert(`An error occurred: ${error.message}`);
   }
@@ -90,6 +99,7 @@ function playerTouchEnd(e)
     player.style.transform = 'translate(0, 0)';
   }
   playerDragEnd(player, e);
+  stopAllScreenScroll();
 }
 
 // need to define the listeners are separate function rather than inline
@@ -209,7 +219,7 @@ function rosterDragOverBehavior(roster, clientY)
   } catch (error) {
     window.alert(`An error occurred: ${error.message}`);
   }
-  }
+}
 
 const insertAbovePlayer = (droppable, mouseY) => {
   const els = droppable.querySelectorAll(".player:not(.is-dragging)");

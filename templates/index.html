@@ -11,7 +11,8 @@
     <script src="/static/drag.js" defer></script>
     <script src="/static/player.js" defer></script>
     <script src="/static/ajax.js" defer></script>
-    <script>
+    <script src="/static/scrollaction.js" defer></script>
+  <script>
       window.addEventListener('load', function() {
         getdata();
         setupDraggablesAndDroppables();
@@ -26,9 +27,9 @@
         <button id=fairplay onclick="runfairplay()">Run Fairplay</button>
       </form>
 
-      <div class="lanes" id=container >
-        
-      </div> <!-- end of lanes -->
+      <div class="lanes" id=lanes>
+        <!-- the roster and shifts will be generated here -->
+      </div> <!-- end of lanescon -->
     </div>
   </body>
 </html>
