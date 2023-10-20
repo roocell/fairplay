@@ -19,7 +19,7 @@
   background-image: url("/static/background.jpg");
   background-position: center;
   background-size: cover;
-
+  background-attachment: fixed;
 }
 
 /* ---- FORM ---- */
@@ -106,6 +106,7 @@
   border-radius: 4px;
   width: 225px;
   min-height: 120px;
+  margin: 10px;
 
   flex-shrink: 0;
 }
@@ -151,4 +152,17 @@
   display: inline-block;
   margin-left: 4px;
   color: red; /* Customize the color */
+}
+
+
+.shiftscontainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-content: flex-start;
+}
+
+.shiftsrow {
+  display: flex;
+  flex-wrap: wrap;
 }

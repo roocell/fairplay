@@ -21,7 +21,7 @@ function getshifts()
 
 function updateDomWithShifts(data)
 {
-  console.log(data);
+  //console.log(data);
 
   // update the DOM with the new shifts
   var lanes = document.getElementById("lanes");
@@ -49,6 +49,24 @@ function updateDomWithShifts(data)
   });
   lanes.appendChild(rosterdiv);
 
+  // put a div around the shifts so we can do 2 rows of 4
+  var shiftscontainer = document.createElement('div');
+  shiftscontainer.id = "shiftscontainer";
+  shiftscontainer.className = "shiftscontainer";
+
+  var shiftsrow1 = document.createElement('div');
+  shiftsrow1.id = "shiftsrow";
+  shiftsrow1.className = "shiftsrow";
+
+  var shiftsrow2 = document.createElement('div');
+  shiftsrow2.id = "shiftsrow";
+  shiftsrow2.className = "shiftsrow";
+
+  shiftscontainer.appendChild(shiftsrow1);
+  shiftscontainer.appendChild(shiftsrow2);
+
+  lanes.appendChild(shiftscontainer);
+
   var i = 0;
   var shiftsData = JSON.parse(data.shifts);
   shiftsData.forEach(function(shift) {
@@ -70,10 +88,15 @@ function updateDomWithShifts(data)
       playerp.innerHTML = player.number + " " + player.name + " " + player.shifts;
       playerp.setAttribute('data-backgroundColor', player.colour);
       playerp.setAttribute('data-doubleshift', player.doubleshifts[i-1]);
-
+      
       shiftdiv.appendChild(playerp);
     });
-    lanes.appendChild(shiftdiv);
+    if (i >=1 && i <= 4)
+    {
+      shiftsrow1.appendChild(shiftdiv);
+    } else {
+      shiftsrow2.appendChild(shiftdiv);
+    }
   });
   setupDraggablesAndDroppables();
 }
