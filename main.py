@@ -5,8 +5,6 @@ import json
 import player
 
 # TODO: add flask_socketio if we need async updates to web
-# TODO: should probably just hold python objects as dicts and then pass the entire
-#       object back and forth to web over AJAX
 # TODO: add flask_sqlalchemy if we need to persist data
 # TODO: add flask_login if we need to persist login info
 # TODO: add flask_wtf if we need to add form validation
@@ -15,10 +13,8 @@ import player
 # TODO: generate notes under shifts with some explanations like
 #        - 4 players get 2 shifts when there are 15 players.
 # TODO: numbers and shifts as decorations rather than just text
-# TODO: raise a red error div from the top if flask responds with error
-#       like fairplay validation failed
 # TODO: change drag image when over roster and when hoving over shift with duplicate player
-# TODO: dont assert if shift limits are violated when shifts aren't full. Assert isn't feeding back data to web.
+# TODO: when dragging players around you could violate fairplay. we need to highlight this on the web somehow. red banner? roster could be over roster?
 
 app = Flask(
     __name__,

@@ -21,7 +21,7 @@ function getshifts()
 
 function updateDomWithShifts(data)
 {
-  //console.log(data);
+  console.log(data);
 
   // update the DOM with the new shifts
   var lanes = document.getElementById("lanes");

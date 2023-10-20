@@ -1,7 +1,7 @@
 import random
 import os
 from logger import log as log
-from shift_limits import get_shift_limits, get_max_shifts, verify_shift_limits, get_pcount_for_max_shifts
+from shift_limits import get_shift_limits, get_max_shifts, verify_shift_limits, get_pcount_for_max_shifts, assert_shift_limits
 from utils import no_duplicates
 import player
 import strong
@@ -85,6 +85,13 @@ def updateshiftsfromweb(data):
 
   shifts = []  # just recreate shifts based on web data
 
+  # how to also calculate player things that the fairplay algorithm figures out
+  # like shifts
+
+  # reset player shifts
+  for p in players:
+    p.shifts = 0
+
   for i, webshift in enumerate(data, start=1):
     s = []
     log.debug(webshift)
@@ -93,6 +100,7 @@ def updateshiftsfromweb(data):
       pp = player.find(players, pwname)
       if pp == None:
         log.error(f"could not find player {pwname}")
+      pp.shifts += 1
       s.append(pp)
     shifts.append(s)
 
@@ -104,6 +112,7 @@ def load_files_and_run(players_file, stronglines_file, prevshifts_file):
   load(players_file, stronglines_file, prevshifts_file)
   global players, stronglines
   run_fairplay_algo(players, stronglines)
+  assert_shift_limits(len(players), shifts)
 
 
 def print_shifts(shifts):

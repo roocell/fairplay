@@ -1,3 +1,5 @@
+from logger import log as log
+
 # every game has players missing
 # this will tell you how many shifts players should get to be fair
 # [number of players] = ...(number of shifts, number of players)
@@ -41,6 +43,20 @@ def get_max_shifts(num_players):
 # shift_list is an array of integers that represents
 # the shifts for the players
 def verify_shift_limits(num_players, shift_list):
+  # count how many of each we have
+  cnts = dict()
+  for c in range(2, 9):
+    cnts[c] = shift_list.count(c)
+
+  for t in shift_numbers[num_players]:
+    if cnts[t[0]] != t[1]:
+      log.error( \
+      f"ERROR filled shifts do not comply to shift limits " + \
+      f"num_players:{num_players} {t[0]},{t[1]} -> ERROR {cnts[t[0]]} players with {t[0]} shifts")
+  return True
+
+
+def assert_shift_limits(num_players, shift_list):
   # count how many of each we have
   cnts = dict()
   for c in range(2, 9):
