@@ -75,15 +75,21 @@ def reset_player_shifts():
     p.shifts = 0
 
 
-# gets called when a player is moved on the web
-# data is a list of dictionaries of players (just names for now)
-def updateshiftsfromweb(data):
+# updates server side view of roster and shifts (from web actions)
+# data is array of players names in roster
+# and several other arrays of players names for shifts.
+# player name is always used to ID player back to server.
+# TODO: we could use player number instead of name to make it more efficient
+# TODO: should have strong validation here for security
+def update(data):
   global shifts, players
 
-  log.debug("updating shifts)")
+  log.debug("updating server side data)")
   log.debug(data)
 
-  shifts = []  # just recreate shifts based on web data
+  # reset server data
+  players = []
+  shifts = []
 
   # how to also calculate player things that the fairplay algorithm figures out
   # like shifts
@@ -92,7 +98,17 @@ def updateshiftsfromweb(data):
   for p in players:
     p.shifts = 0
 
-  for i, webshift in enumerate(data, start=1):
+  rosterFromClientSide = data["roster"]
+  shiftsFromClientSide = data["shifts"]
+
+  for rpname in rosterFromClientSide:
+    p = player.find(players, rpname)
+    if p == None:
+      log.error(f"could not find player {rpname}")
+    else:
+      players.append(p)
+
+  for i, webshift in enumerate(shiftsFromClientSide, start=1):
     s = []
     log.debug(webshift)
     for pw in webshift:
@@ -100,8 +116,9 @@ def updateshiftsfromweb(data):
       pp = player.find(players, pwname)
       if pp == None:
         log.error(f"could not find player {pwname}")
-      pp.shifts += 1
-      s.append(pp)
+      else:
+        pp.shifts += 1
+        s.append(pp)
     shifts.append(s)
 
   double.check_consecutive(players, shifts)

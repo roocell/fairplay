@@ -131,19 +131,28 @@ function playerDragStart(player, e)
 function playerDragEnd(player, e)
 {
   player.classList.remove("is-dragging");
-
   player.style.backgroundColor = player.getAttribute('data-backgroundColor');
-
   var droppingIntoRoster = false;
+
   var rosterdiv = document.getElementById("roster");
-  if (player.parentNode == rosterdiv)
+  const trashcan = document.getElementById("trashcan");
+  
+  // check for trash
+  if (player.dataset.droppingIntoTrash)
   {
-      droppingIntoRoster = true;
-  }
+    console.log("trashing player");
+    player.style.display = "none"; // hide it
+    e.preventDefault();
+    updatedata(); 
+    return;
+  } else if (player.parentNode == rosterdiv) {
+    droppingIntoRoster = true;
+  }  
   
   // if it's the roster - clone it so we don't remove it from the roster
   // we don't do this on touch events (before there we've cloned a drag object instead)
   if (!droppingIntoRoster && player.dataset.fromRoster == "true") {
+    console.log("cloning into roster");
     const playerClone = player.cloneNode(true);
     // need to add the listeners manually on a cloned node
     // (if not specified instrinicly)
@@ -154,7 +163,7 @@ function playerDragEnd(player, e)
   }
 
   e.preventDefault();
-  updateshifts();  
+  updatedata();  
 }
 
 // have to create event functions so i can call playerDragStart() 
@@ -253,6 +262,20 @@ const insertAbovePlayer = (droppable, mouseY) => {
   return closestPlayer;
 };
 
+function trashDragOverBehavior(e)
+{
+  // make smaller, add to trashcan (we need this on playerDragEnd() )
+  const curPlayer = document.querySelector(".is-dragging");
+  curPlayer.style.transform = "scale(" + 0.5 + ")";
+  e.dataTransfer.dropEffect = "move";
+  curPlayer.dataset.droppingIntoTrash = true;
+  // can't append a <p> to another <p>
+  // so can't put this player into the trash <p>
+}
+function trashDragLeaveBehavior(e)
+{
+  // nothing for now
+}
 
 function setupDraggablesAndDroppables()
 {
@@ -322,4 +345,19 @@ function setupDraggablesAndDroppables()
     });  
   }
 
+  // make the roster trashcan a droppable
+  // when players are dropped here they get removed from the roster
+  // we can do this by simplying adding it to the trashcan and then hiding it
+  const trashcan = document.getElementById("trashcan");
+  if (trashcan != null)
+  {
+    trashcan.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      trashDragOverBehavior(e);
+    });
+    trashcan.addEventListener("dragleave", (e) => {
+      e.preventDefault();
+      trashDragLeaveBehavior(e);
+    });
+  }
 }

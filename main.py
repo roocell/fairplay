@@ -15,6 +15,9 @@ import player
 # TODO: numbers and shifts as decorations rather than just text
 # TODO: change drag image when over roster and when hoving over shift with duplicate player
 # TODO: when dragging players around you could violate fairplay. we need to highlight this on the web somehow. red banner? roster could be over roster?
+# TODO: separate page for roster creation but main page should be able to easily remove a player from the roster - a page refresh starts back from full roster. thish would mean the add player button and field would be on the roster creation page
+# TODO: change player cursor: not-allowed if double players
+# TODO: in python code change players to roster
 
 app = Flask(
     __name__,
@@ -45,12 +48,12 @@ def home_page():
 
 
 # Define a route to handle form submission
-@app.route('/updateshifts', methods=['POST'])
-def updateshifts():
+@app.route('/updatedata', methods=['POST'])
+def updatedata():
   # take shifts from web and update our local copy
   data = request.get_json()
   #log.debug(data)
-  fairplay.updateshiftsfromweb(data)
+  fairplay.update(data)
   # all the smarts are done in python code.
   # so when a player moves we need to run part of the
   # fairplay logic and feed back the information back to

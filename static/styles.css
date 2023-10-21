@@ -127,6 +127,22 @@
   user-drag: none; /* Disable user-drag for older browsers */
 }
 
+.trashcan {
+  background: white;
+  color: black;
+  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.15);
+
+  padding: 0px;
+  border-radius: 4px;
+
+  font-size: 16px;
+  cursor: not-allowed;
+  outline-style: none;
+
+  touch-action: none; /* Prevent default touch behavior */
+  user-drag: none; /* Disable user-drag for older browsers */
+}
+
 /* TODO: use pseudo classes like below to put decorations on the player box
 .player::before 
 */

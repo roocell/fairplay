@@ -1,7 +1,18 @@
-function getshifts()
+function getdomdata()
 {
-  var data = new Array();
-
+  var data = {
+    shifts: [],
+    roster: []
+  };
+  
+  var roster = document.getElementById("roster");
+  var players = roster.querySelectorAll(".player");
+  players.forEach((player) => {
+    data.roster.push({
+      "name" : player.id
+        })
+  });
+  
   // build data of the shifts on screen
   // to send back to python
   var shifts = document.querySelectorAll(".shift");
@@ -14,13 +25,47 @@ function getshifts()
             "name" : player.id
               })
         });
-    data.push(parray)
+    data.shifts.push(parray)
   });
   return data;
 }
 
-function updateDomWithShifts(data)
+// sends data back to server to update
+// roster and shifts
+function updatedata()
 {
+  var data = getdomdata();
+  var datastr = JSON.stringify(data);
+  console.log("datastr:" + datastr);
+  //console.log(JSON.stringify(data));
+  // Make a POST request to your Flask route with the JSON data
+  fetch('/updatedata', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json'
+      },
+      body: datastr
+  }).then(response => {
+        if (response.ok) {
+            // If the response status is in the 200-299 range, it means the request was successful.
+            return response.json(); // Parse the response as JSON
+        } else {
+            // Handle errors or non-successful responses here
+            throw new Error('Request failed with status: ' + response.status);
+        }
+    }).then(data => {
+        // Handle the JSON data received from the server
+        updateDom(data);
+    }).catch(error => {
+        // Handle any network or request-related errors here
+        console.error(error);
+    });
+
+}
+
+function updateDom(data)
+{
+  console.log("updating DOM:");
   console.log(data);
 
   // update the DOM with the new shifts
@@ -36,6 +81,19 @@ function updateDomWithShifts(data)
   rheader.innerHTML = "Roster";
   rosterdiv.appendChild(rheader);
 
+  // trash can
+  var trashcan = document.createElement("p");
+  trashcan.style.textAlign = "center";
+  trashcan.classList.add("trashcan");
+  trashcan.id = "trashcan";
+  var img = document.createElement("img");
+  img.src = "/static/trashcan.png";
+  img.alt = "remove player from roster";
+  img.width = 50;
+  trashcan.appendChild(img);
+
+  rosterdiv.appendChild(trashcan);
+  
   var playersData = JSON.parse(data.players);
   playersData.forEach(function(player) {
     var playerp = document.createElement("p");
@@ -102,34 +160,8 @@ function updateDomWithShifts(data)
   setupDraggablesAndDroppables();
 }
 
-function updateshifts()
-{
-  // Make a POST request to your Flask route with the JSON data
-  fetch('/updateshifts', {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(getshifts())
-  }).then(response => {
-        if (response.ok) {
-            // If the response status is in the 200-299 range, it means the request was successful.
-            return response.json(); // Parse the response as JSON
-        } else {
-            // Handle errors or non-successful responses here
-            throw new Error('Request failed with status: ' + response.status);
-        }
-    }).then(data => {
-        // Handle the JSON data received from the server
-        updateDomWithShifts(data);
-    }).catch(error => {
-        // Handle any network or request-related errors here
-        console.error(error);
-    });
 
-}
-
-function getdata()
+function getserverdata()
 {
   fetch('/getdata', {
       method: 'GET',
@@ -146,7 +178,7 @@ function getdata()
         }
     }).then(data => {
         // Handle the JSON data received from the server
-        updateDomWithShifts(data);
+        updateDom(data);
     }).catch(error => {
         // Handle any network or request-related errors here
         console.error(error);
@@ -170,7 +202,7 @@ function runfairplay()
         }
     }).then(data => {
         // Handle the JSON data received from the server
-        updateDomWithShifts(data);
+        updateDom(data);
     }).catch(error => {
         // Handle any network or request-related errors here
         console.error(error);
