@@ -63,15 +63,11 @@ function updatedata()
 
 }
 
-function updateDom(data)
+function updateDomRoster(data)
 {
-  console.log("updating DOM:");
-  console.log(data);
-
-  // update the DOM with the new shifts
   var lanes = document.getElementById("lanes");
-    lanes.innerHTML = "";
-
+  lanes.innerHTML = "";
+ 
   // update the roster in the DOM with the players again
   var rosterdiv = document.createElement('div');
   rosterdiv.className = "roster";
@@ -93,7 +89,7 @@ function updateDom(data)
   trashcan.appendChild(img);
 
   rosterdiv.appendChild(trashcan);
-  
+
   var playersData = JSON.parse(data.players);
   playersData.forEach(function(player) {
     var playerp = document.createElement("p");
@@ -106,6 +102,17 @@ function updateDom(data)
     rosterdiv.appendChild(playerp);
   });
   lanes.appendChild(rosterdiv);
+}
+
+function updateDom(data)
+{
+  console.log("updating DOM:");
+  console.log(data);
+
+  // update the DOM with the new shifts
+  var lanes = document.getElementById("lanes");
+
+  updateDomRoster(data);
 
   // put a div around the shifts so we can do 2 rows of 4
   var shiftscontainer = document.createElement('div');

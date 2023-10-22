@@ -82,12 +82,13 @@ def reset_player_shifts():
 # TODO: we could use player number instead of name to make it more efficient
 # TODO: should have strong validation here for security
 def update(data):
-  global shifts, players
+  global shifts, players, stronglines
 
-  log.debug("updating server side data)")
+  log.debug("updating server side data")
   log.debug(data)
 
   # reset server data
+  serverSideRoster = players.copy()
   players = []
   shifts = []
 
@@ -95,18 +96,24 @@ def update(data):
   # like shifts
 
   # reset player shifts
-  for p in players:
+  for p in serverSideRoster:
     p.shifts = 0
+
+  player.dump(serverSideRoster)
 
   rosterFromClientSide = data["roster"]
   shiftsFromClientSide = data["shifts"]
 
   for rpname in rosterFromClientSide:
-    p = player.find(players, rpname)
+    p = player.find(serverSideRoster, rpname["name"])
     if p == None:
       log.error(f"could not find player {rpname}")
     else:
       players.append(p)
+
+  # fixup stronglines
+  stronglines = strong.reload(players, stronglines)
+  strong.dump(stronglines)
 
   for i, webshift in enumerate(shiftsFromClientSide, start=1):
     s = []
@@ -254,7 +261,7 @@ def fill_shifts(players, shifts, stronglines):
       # fill in the shift and increment shifts
       # but also keep on eye on max shifts to make sure there's no error
       p_to_add.shifts += 1
-      assert p_to_add.shifts <= max_shifts, "ERROR: we've exceeded max shifts"
+      assert p_to_add.shifts <= max_shifts, f"ERROR: we've exceeded max shifts {max_shifts} for {len(players)}"
 
       #log.debug(f"ADDING {p_to_add.name}")
       s.append(p_to_add)

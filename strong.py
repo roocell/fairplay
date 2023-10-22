@@ -31,6 +31,24 @@ def load(players, stronglines_json):
   return stronglines
 
 
+# need to reload stronglines if roster is adjusted
+# might have to remove players
+# TODO: need UI to adjust stronglines
+def reload(players, stronglines):
+  stronglines_new = []
+  for sl in stronglines:
+    group = []
+    for p in sl:
+      if (player.find(players, p.name) == None):
+        log.debug(f"couldn't find player {p.name}")
+        # this can happen if a player is on a strongline, but has been removed from the game
+        # just leave them out of the strongline
+      else:
+        group.append(p)
+    stronglines_new.append(group)
+  return stronglines_new
+
+
 def get_players_not_in_stronglines(players, stronglines):
   nsl_players = []
   for p in players:

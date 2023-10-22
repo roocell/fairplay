@@ -41,9 +41,9 @@ def load(players_json, prevshift_json):
 
 
 def find(players, name):
-  for player in players:
-    if player.name == name:
-      return player
+  for p in players:
+    if p.name == name:
+      return p
   return None
 
 

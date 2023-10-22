@@ -17,7 +17,8 @@ import player
 # TODO: when dragging players around you could violate fairplay. we need to highlight this on the web somehow. red banner? roster could be over roster?
 # TODO: separate page for roster creation but main page should be able to easily remove a player from the roster - a page refresh starts back from full roster. thish would mean the add player button and field would be on the roster creation page
 # TODO: change player cursor: not-allowed if double players
-# TODO: in python code change players to roster
+# TODO: in python code change 'players' array to 'roster'
+# TODO: need UI to adjust stronglines
 
 app = Flask(
     __name__,

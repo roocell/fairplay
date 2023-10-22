@@ -141,7 +141,7 @@ function playerDragEnd(player, e)
   if (player.dataset.droppingIntoTrash)
   {
     console.log("trashing player");
-    player.style.display = "none"; // hide it
+    player.parentNode.removeChild(player);
     e.preventDefault();
     updatedata(); 
     return;

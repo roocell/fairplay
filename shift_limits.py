@@ -45,6 +45,10 @@ def check_shift_limits(players, shifts, logvsassert):
   shift_list = [p.shifts for p in players]
   num_players = len(players)
 
+  if num_players < 5 or num_players > 15:
+    # beyond the bounds of our data - just return true
+    return True
+
   # count how many of each we have
   cnts = dict()
   for c in range(2, 9):
