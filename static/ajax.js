@@ -167,7 +167,6 @@ function updateDom(data)
   setupDraggablesAndDroppables();
 }
 
-
 function getserverdata()
 {
   fetch('/getdata', {
@@ -191,6 +190,31 @@ function getserverdata()
         console.error(error);
     });
 }
+
+function getserverdata_roster()
+{
+  fetch('/getdata', {
+      method: 'GET',
+      headers: {
+          'Content-Type': 'application/json'
+      },
+    }).then(response => {
+        if (response.ok) {
+            // If the response status is in the 200-299 range, it means the request was successful.
+            return response.json(); // Parse the response as JSON
+        } else {
+            // Handle errors or non-successful responses here
+            throw new Error('Request failed with status: ' + response.status);
+        }
+    }).then(data => {
+        // Handle the JSON data received from the server
+        updateDomRoster(data);
+    }).catch(error => {
+        // Handle any network or request-related errors here
+        console.error(error);
+    });
+}
+
 
 function runfairplay()
 {

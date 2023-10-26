@@ -1,17 +1,22 @@
 const form = document.getElementById("player-form");
-const input = document.getElementById("player-input");
-const rosterLane = document.getElementById("roster");
+const player_number = document.getElementById("player-number");
+const player_name = document.getElementById("player-name");
 
 form.addEventListener("submit", (e) => {
   e.preventDefault();
-  const value = input.value;
+  const number = player_number.value;
+  const name = player_name.value;
+  const rosterLane = document.getElementById("roster");
 
-  if (!value) return;
+  if (!number || !name) return;
 
   const newPlayer = document.createElement("p");
   newPlayer.classList.add("player");
   newPlayer.setAttribute("draggable", "true");
-  newPlayer.innerText = value;
+  newPlayer.innerText = number + " " + name;
+  newPlayer.id = name;
+  newPlayer.dataset.number = number;
+  newPlayer.dataset.name = name;
 
   newPlayer.addEventListener("dragstart", () => {
     newPlayer.classList.add("is-dragging");
@@ -21,7 +26,11 @@ form.addEventListener("submit", (e) => {
     newPlayer.classList.remove("is-dragging");
   });
 
-    rosterLane.appendChild(newPlayer);
+  rosterLane.appendChild(newPlayer);
 
-  input.value = "";
+  player_number.value = "";
+  player_name.value = "";
+
+  // send roster back to server
+  updatedata();
 });

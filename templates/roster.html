@@ -14,14 +14,18 @@
     <script src="/static/scrollaction.js" defer></script>
   <script>
       window.addEventListener('load', function() {
-        getserverdata();
+        // get data but just generate the roster
+        getserverdata_roster();
       });
     </script>
   </head>
   <body>
     <div class="board">
-      <form id="player-form">
-        <button id=fairplay onclick="runfairplay()">Run Fairplay</button>
+      <form class="player-form" id="player-form">
+        <button type="button" onclick="window.location.href = '/'">Home</button>
+        <input type="text" class="player-input" style="width: 50px;" placeholder="#" id="player-number" />
+        <input type="text" class="player-input" placeholder="New Player..." id="player-name" />
+        <button type="submit">Add +</button>
       </form>
 
       <div class="lanes" id=lanes>

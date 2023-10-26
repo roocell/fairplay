@@ -3,6 +3,7 @@ import fairplay
 from logger import log as log
 import json
 import player
+import os
 
 # TODO: add flask_socketio if we need async updates to web
 # TODO: add flask_sqlalchemy if we need to persist data
@@ -38,11 +39,14 @@ def generate_json_data():
 
 @app.route('/')  # What happens when the user visits the site
 def home_page():
+  current_file_path = os.path.abspath(__file__)
+  current_directory = os.path.dirname(current_file_path)
+
   # run fairplay so we have all the data web the page comes up
   fairplay.load(
-      "test/15p_3sl_0pv/players.json",
-      "test/15p_3sl_0pv/stronglines.json",
-      "test/15p_3sl_0pv/prevshifts.json",
+      current_directory + "/test/15p_3sl_0pv/players.json",
+      current_directory + "/test/15p_3sl_0pv/stronglines.json",
+      current_directory + "/test/15p_3sl_0pv/prevshifts.json",
   )
 
   return render_template('index.html')
@@ -70,6 +74,11 @@ def updatedata():
 @app.route('/getdata', methods=['GET'])
 def getdata():
   return generate_json_data()
+
+
+@app.route('/roster', methods=['GET'])
+def roster():
+  return render_template('roster.html')
 
 
 @app.route('/runfairplay', methods=['GET'])
