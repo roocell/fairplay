@@ -12,10 +12,9 @@
     <script src="/static/player.js" defer></script>
     <script src="/static/ajax.js" defer></script>
     <script src="/static/scrollaction.js" defer></script>
-  <script>
+    <script>
       window.addEventListener('load', function() {
-        // get data but just generate the roster
-        getserverdata_roster();
+        onLoadRoster();
       });
     </script>
   </head>
@@ -23,7 +22,7 @@
     <div class="board">
       <form class="player-form" id="player-form">
         <button type="button" onclick="window.location.href = '/'">Home</button>
-        <input type="text" class="player-input" style="width: 50px;" placeholder="#" id="player-number" />
+        <input type="text" class="player-input" style="width: 50px;" placeholder="#..." id="player-number" />
         <input type="text" class="player-input" placeholder="New Player..." id="player-name" />
         <button type="submit">Add +</button>
       </form>

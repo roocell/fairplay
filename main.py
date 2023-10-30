@@ -5,6 +5,12 @@ import json
 import player
 import os
 
+# fairtimesport.com - registered
+# fairplaytime.ca
+# fairplayti.me
+# fairplay.app
+# fairplay.coach
+
 # TODO: add flask_socketio if we need async updates to web
 # TODO: add flask_sqlalchemy if we need to persist data
 # TODO: add flask_login if we need to persist login info
@@ -20,6 +26,15 @@ import os
 # TODO: change player cursor: not-allowed if double players
 # TODO: in python code change 'players' array to 'roster'
 # TODO: need UI to adjust stronglines
+# TODO: on mobile could display just number,initials/shifts on shift - to fit on iphone.
+# TODO: switch frontend from JS to react-native. this will allow it to run as an app on
+#       ios/andriod.
+#       https://github.com/computerjazz/react-native-draggable-flatlist
+#       https://github.com/marconunnari/trello-clone
+# TODO: roster page should operate on full roster. fairplay page operates on game roster.
+#       this way roster page can reset to full roster, then goto game roster and remove
+#       players.
+# TODO: widgetize to plugin to other sites
 
 app = Flask(
     __name__,

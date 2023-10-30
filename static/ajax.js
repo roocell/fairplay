@@ -1,3 +1,22 @@
+// use chrome devtools to test
+const isMobile = /iPhone|iPad|iPod|Android|Windows Phone/.test(navigator.userAgent);
+
+function onLoadMain()
+{
+  getserverdata();
+  setupDraggablesAndDroppables();
+
+  if (isMobile)
+  {
+    updateDomWithDrawer();
+  }
+}
+
+function onLoadRoster()
+{
+  getserverdata_roster();
+}
+
 function getdomdata()
 {
   var data = {
@@ -65,9 +84,6 @@ function updatedata()
 
 function updateDomRoster(data)
 {
-  var lanes = document.getElementById("lanes");
-  lanes.innerHTML = "";
- 
   // update the roster in the DOM with the players again
   var rosterdiv = document.createElement('div');
   rosterdiv.className = "roster";
@@ -101,7 +117,29 @@ function updateDomRoster(data)
     playerp.setAttribute('data-backgroundColor', player.colour);
     rosterdiv.appendChild(playerp);
   });
-  lanes.appendChild(rosterdiv);
+ 
+  if (isMobile == false) {
+    var lanes = document.getElementById("lanes");
+    lanes.appendChild(rosterdiv);
+  }
+  // for mobile put the roster into a drawer
+  else {
+    var drawer = document.getElementById("drawer");
+    drawer.innerHTML = "";
+    drawer.appendChild(rosterdiv);
+  }
+}
+
+function shortenName(name) {
+  const parts = name.split(' ');
+  if (parts.length > 1) {
+    // Take the first letter of each part
+    const shortened = parts.map(part => part.slice(0, 2)).join('');
+    return shortened;
+  } else {
+    // If there is only one part, take the first three letters
+    return name.substring(0, 3);
+  }
 }
 
 function updateDom(data)
@@ -109,9 +147,11 @@ function updateDom(data)
   console.log("updating DOM:");
   console.log(data);
 
+  // always clear the lanes div - so it can be repopulated with shifts
   // update the DOM with the new shifts
   var lanes = document.getElementById("lanes");
-
+  lanes.innerHTML = "";
+  
   updateDomRoster(data);
 
   // put a div around the shifts so we can do 2 rows of 4
@@ -142,6 +182,7 @@ function updateDom(data)
 
     var header = document.createElement('h3');
     header.className = "heading";
+    header.style.textAlign = "right";
     header.innerHTML = "Shift" + i;
     shiftdiv.appendChild(header);
 
@@ -150,7 +191,13 @@ function updateDom(data)
       playerp.className = "player";
       playerp.draggable = "true";
       playerp.id = player.name;
-      playerp.innerHTML = player.number + " " + player.name + " " + player.shifts;
+      if (isMobile)
+      {
+        //playerp.innerHTML = player.number + " " + shortenName(player.name) + " " + player.shifts;
+        playerp.innerHTML = player.number + " " + player.name + " " + player.shifts;
+      } else {
+        playerp.innerHTML = player.number + " " + player.name + " " + player.shifts;
+      }
       playerp.setAttribute('data-backgroundColor', player.colour);
       playerp.setAttribute('data-doubleshift', player.doubleshifts[i-1]);
       playerp.setAttribute('data-violates', player.violates);

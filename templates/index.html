@@ -12,14 +12,16 @@
     <script src="/static/player.js" defer></script>
     <script src="/static/ajax.js" defer></script>
     <script src="/static/scrollaction.js" defer></script>
-  <script>
+    <script src="/static/drawer.js" defer></script>
+    <script>
       window.addEventListener('load', function() {
-        getserverdata();
-        setupDraggablesAndDroppables();
+        onLoadMain();
       });
     </script>
   </head>
   <body>
+    <div class="drawer" id="drawer">
+    </div>
     <div class="board">
       <form class="player-form" id="player-form">
         <button type="button" id=fairplay onclick="runfairplay()">Run Fairplay</button>

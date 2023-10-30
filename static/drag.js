@@ -163,7 +163,7 @@ function playerDragEnd(player, e)
   }
 
   e.preventDefault();
-  updatedata();  
+  updatedata();
 }
 
 // have to create event functions so i can call playerDragStart() 
