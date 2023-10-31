@@ -74,6 +74,16 @@ function playerTouchStart(e)
         }// else if (playerDragClone.dataset.droppingIntoRoster) {
         //}
 
+        // test for drag over trashcan
+        const trashcan = document.getElementById("trashcan");
+          const curPlayer = document.querySelector(".is-dragging");
+        if (ifTouchInDroppable(touch, trashcan))
+        {
+          trashDragOverBehavior(e);
+        } else if (curPlayer.dataset.droppingIntoTrash) {
+           trashDragLeaveBehavior(e);
+        }
+
         processScrollAction(touch);
 
       }
@@ -138,7 +148,7 @@ function playerDragEnd(player, e)
   const trashcan = document.getElementById("trashcan");
   
   // check for trash
-  if (player.dataset.droppingIntoTrash)
+  if (player.dataset.droppingIntoTrash == true)
   {
     console.log("trashing player");
     player.parentNode.removeChild(player);
@@ -264,17 +274,29 @@ const insertAbovePlayer = (droppable, mouseY) => {
 
 function trashDragOverBehavior(e)
 {
+  console.log("trashDragOverBehavior");
   // make smaller, add to trashcan (we need this on playerDragEnd() )
   const curPlayer = document.querySelector(".is-dragging");
   curPlayer.style.transform = "scale(" + 0.5 + ")";
-  e.dataTransfer.dropEffect = "move";
   curPlayer.dataset.droppingIntoTrash = true;
+  if (typeof e.dataTransfer !== "undefined")
+  {
+    e.dataTransfer.dropEffect = "move";
+  }
   // can't append a <p> to another <p>
   // so can't put this player into the trash <p>
 }
 function trashDragLeaveBehavior(e)
 {
-  // nothing for now
+  console.log("trashDragLeaveBehavior");
+  // return to normal
+  const curPlayer = document.querySelector(".is-dragging");
+  curPlayer.style.transform = "scale(" + 1.0 + ")";
+  curPlayer.dataset.droppingIntoTrash = false;
+  if (typeof e.dataTransfer !== "undefined")
+  {
+    e.dataTransfer.dropEffect = "copy";
+  }
 }
 
 function setupDraggablesAndDroppables()
