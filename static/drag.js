@@ -80,7 +80,7 @@ function playerTouchStart(e)
         if (ifTouchInDroppable(touch, trashcan))
         {
           trashDragOverBehavior(e);
-        } else if (curPlayer.dataset.droppingIntoTrash) {
+        } else if (curPlayer.dataset.droppingIntoTrash == "true") {
            trashDragLeaveBehavior(e);
         }
 
@@ -146,9 +146,10 @@ function playerDragEnd(player, e)
 
   var rosterdiv = document.getElementById("roster");
   const trashcan = document.getElementById("trashcan");
-  
+
   // check for trash
-  if (player.dataset.droppingIntoTrash == true)
+  // NOTE: dataset is treated as a string.
+  if (player.dataset.droppingIntoTrash == "true")
   {
     console.log("trashing player");
     player.parentNode.removeChild(player);
@@ -274,7 +275,6 @@ const insertAbovePlayer = (droppable, mouseY) => {
 
 function trashDragOverBehavior(e)
 {
-  console.log("trashDragOverBehavior");
   // make smaller, add to trashcan (we need this on playerDragEnd() )
   const curPlayer = document.querySelector(".is-dragging");
   curPlayer.style.transform = "scale(" + 0.5 + ")";
@@ -288,7 +288,6 @@ function trashDragOverBehavior(e)
 }
 function trashDragLeaveBehavior(e)
 {
-  console.log("trashDragLeaveBehavior");
   // return to normal
   const curPlayer = document.querySelector(".is-dragging");
   curPlayer.style.transform = "scale(" + 1.0 + ")";
