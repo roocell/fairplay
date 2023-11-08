@@ -13,7 +13,7 @@ import os
 
 # TODO: add flask_socketio if we need async updates to web
 # TODO: add flask_sqlalchemy if we need to persist data
-# TODO: add flask_login if we need to persist login info
+# TODO: add flask_dance for social logins (https://testdriven.io/blog/flask-social-auth/, https://gist.github.com/MartinHarding/6f09588676f9ca911e9d52a87d8adc6f)
 # TODO: add flask_wtf if we need to add form validation
 # TODO: add flask_mail if we need to send emails
 # TODO: add flask_bcrypt if we need to hash passwords

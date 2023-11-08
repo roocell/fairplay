@@ -23,4 +23,5 @@
 - save shifts and name them
 - save rosters
 - weight players to get more/less shifts
-- 
+- widgetize to plugin to other sites
+- individual($20/year) and oganization subscriptions ($1000/year)
