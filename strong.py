@@ -9,7 +9,8 @@ enabled = True
 # each line in the files contains a list of players
 # this function will return a list of groups of Players
 def load(players, stronglines_json):
-  strongline_colours = ["#f0d5aa", "#cff6ff", "#e1ffcf", "#f1d9ff", "#ffd9d9"]
+  #strongline_colours = ["#f0d5aa", "#cff6ff", "#e1ffcf", "#f1d9ff", "#ffd9d9"]
+  strongline_colours = ["#777777", "#999999", "#99CEAC", "#33B0AF", "#2E6C9D"]
   stronglines = []
 
   # load into an array stronglines
