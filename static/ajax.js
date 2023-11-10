@@ -41,7 +41,8 @@ function getdomdata()
     var players = shift.querySelectorAll(".player");
         players.forEach(function(player) {
           parray.push({
-            "name" : player.id
+            "name" : player.id,
+            "lockedtoshift" : shift.classList.contains("locked-outline")
               })
         });
     data.shifts.push(parray)
@@ -142,6 +143,25 @@ function shortenName(name) {
   }
 }
 
+function displayShiftAsLocked(shift, lockimg)
+{
+  lockimg.src = "/static/lock.png";
+  shift.classList.add("locked-outline");
+}
+
+function handleLockClick(lockimg)
+{
+  var shift = lockimg.parentElement;
+  if (shift.classList.contains("locked-outline"))
+  {
+    lockimg.src = "/static/unlock.png";
+    shift.classList.remove("locked-outline");
+  } else {
+    displayShiftAsLocked(shift, lockimg);
+  }
+  
+}
+
 function updateDom(data)
 {
   console.log("updating DOM:");
@@ -180,12 +200,23 @@ function updateDom(data)
     shiftdiv.className = "shift";
     shiftdiv.id = "shift" + i;
 
+    // add lock button to shiftdiv
+    var lockimg = document.createElement('img');
+    lockimg.className = "lock-button";
+    lockimg.src = "/static/unlock.png";
+    lockimg.alt = "lock";
+    lockimg.onclick = function() {
+      handleLockClick(lockimg);
+    };
+    //<a href="https://www.flaticon.com/free-icons/lock" title="lock icons">Lock icons created by Dave Gandy - Flaticon</a>
+    shiftdiv.appendChild(lockimg);
+    
     var header = document.createElement('h3');
     header.className = "heading";
     header.style.textAlign = "right";
     header.innerHTML = "Shift" + i;
     shiftdiv.appendChild(header);
-
+   
     shift.forEach(function(player) {
       var playerp = document.createElement('p');
       playerp.className = "player";
@@ -193,6 +224,7 @@ function updateDom(data)
       playerp.id = player.name;
       if (isMobile)
       {
+        // in case we want a different display for mobile
         //playerp.innerHTML = player.number + " " + shortenName(player.name) + " " + player.shifts;
         playerp.innerHTML = player.number + " " + player.name + " " + player.shifts;
       } else {
@@ -201,9 +233,19 @@ function updateDom(data)
       playerp.setAttribute('data-backgroundColor', player.colour);
       playerp.setAttribute('data-doubleshift', player.doubleshifts[i-1]);
       playerp.setAttribute('data-violates', player.violates);
-
+      
       shiftdiv.appendChild(playerp);
+
+      // if any player was locked - lock the shift
+      // doesn't kill us to do it multiple times
+      if (player.lockedtoshift[i-1] == 1)
+      {
+        // assume the log img is the first img in the shiftdiv
+        lockimg = shiftdiv.getElementsByTagName("img")[0]
+        displayShiftAsLocked(shiftdiv, lockimg);
+      }
     });
+
     if (i >=1 && i <= 4)
     {
       shiftsrow1.appendChild(shiftdiv);
@@ -265,11 +307,15 @@ function getserverdata_roster()
 
 function runfairplay()
 {
+  var data = getdomdata();
+  var datastr = JSON.stringify(data);
+
   fetch('/runfairplay', {
-      method: 'GET',
+      method: 'POST',
       headers: {
           'Content-Type': 'application/json'
       },
+    body: datastr
     }).then(response => {
         if (response.ok) {
             // If the response status is in the 200-299 range, it means the request was successful.

@@ -24,6 +24,7 @@ class Player:
     self.colour = "white"
     self.doubleshifts = [0] * 8  # an array of bools for each shift
     self.violates = 0  # violates max shifts
+    self.lockedtoshift = [0] * 8  # an array of bools for each shift
 
 
 def load(players_json, prevshift_json):
@@ -49,7 +50,9 @@ def find(players, name):
 
 def dump(players):
   for p in players:
-    log.debug(f"{p.number} {p.name}: {p.shifts} {p.prev} {p.doubleshifts}")
+    log.debug(
+        f"{p.number} {p.name}: {p.shifts} {p.prev} {p.doubleshifts} {p.lockedtoshift}"
+    )
 
 
 # sort the players by shifts but shuffle within each group of shifts

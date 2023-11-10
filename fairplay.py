@@ -38,8 +38,7 @@ def fairplay_validation():
 
 def run_fairplay_algo(players, stronglines):
   global shifts
-  shifts = []
-  shifts = get_shifts(players, stronglines)
+  get_shifts(shifts, players, stronglines)
   fairplay_validation()
 
 
@@ -70,9 +69,37 @@ def find_player_in_shift(player_name, shift):
 
 
 def reset_player_shifts():
-  global players
+  global players, stronglines
   for p in players:
     p.shifts = 0
+
+
+def clear_shifts_not_locked(data):
+  global shifts, players, stronglines
+  # assume roster isn't changing
+
+  reset_player_shifts()
+
+  # recreate the shifts array - but hold onto anything locked
+  # if not locked we will fill in an empty shift
+  # remember to track player shifts and lockedtoshift
+  shifts = []
+  shiftsFromClientSide = data["shifts"]
+  for i, webshift in enumerate(shiftsFromClientSide):
+    s = []
+    for pw in webshift:
+      pwname = pw["name"].strip()
+      pp = player.find(players, pwname)
+      if pp == None:
+        log.error(f"could not find player {pwname}")
+      else:
+        # only keep (and update) locked players
+        if pw["lockedtoshift"] == True:
+          pp.shifts += 1
+          # we may be locking the player to the shift - update the player array
+          pp.lockedtoshift[i] = int(pw["lockedtoshift"])
+          s.append(pp)
+    shifts.append(s)
 
 
 # updates server side view of roster and shifts (from web actions)
@@ -87,17 +114,15 @@ def update(data):
   log.debug("updating server side data")
   log.debug(data)
 
+  reset_player_shifts()
+
   # reset server data
   serverSideRoster = players.copy()
-  players = []
+  players = []  # new roster
   shifts = []
 
   # how to also calculate player things that the fairplay algorithm figures out
   # like shifts
-
-  # reset player shifts
-  for p in serverSideRoster:
-    p.shifts = 0
 
   player.dump(serverSideRoster)
 
@@ -111,11 +136,11 @@ def update(data):
     else:
       players.append(p)
 
-  # fixup stronglines
+  # fixup stronglines (players could be removed from roster)
   stronglines = strong.reload(players, stronglines)
   strong.dump(stronglines)
 
-  for i, webshift in enumerate(shiftsFromClientSide, start=1):
+  for i, webshift in enumerate(shiftsFromClientSide):
     s = []
     log.debug(webshift)
     for pw in webshift:
@@ -125,6 +150,8 @@ def update(data):
         log.error(f"could not find player {pwname}")
       else:
         pp.shifts += 1
+        # we may be locking the player to the shift - update the player array
+        pp.lockedtoshift[i] = int(pw["lockedtoshift"])
         s.append(pp)
     shifts.append(s)
 
@@ -134,7 +161,8 @@ def update(data):
 
 def load_files_and_run(players_file, stronglines_file, prevshifts_file):
   load(players_file, stronglines_file, prevshifts_file)
-  global players, stronglines
+  global players, stronglines, shifts
+  shifts = []
   run_fairplay_algo(players, stronglines)
   assert_shift_limits(players, shifts)
 
@@ -158,7 +186,8 @@ def get_players_not_at_max_shifts(players, shifts):
 
 
 # build a set of groups of strongline players
-def get_strongline_shifts(players, stronglines, num_shifts=8):
+# this is how we start building our shifts
+def get_strongline_shifts(shifts, players, stronglines, num_shifts=8):
   # shuffle them so we don't always have the same starting line
   random.shuffle(stronglines)
 
@@ -170,7 +199,6 @@ def get_strongline_shifts(players, stronglines, num_shifts=8):
   log.debug(pcount_for_max_shifts)
 
   # make 8 shifts with stronglines
-  shifts = []
   for i in range(num_shifts):
     sl = stronglines[i % len(stronglines)]
 
@@ -199,13 +227,18 @@ def get_strongline_shifts(players, stronglines, num_shifts=8):
       if p.shifts == (max_shifts - 1) and available_max_shift_spots < len(sl):
         add_shift = False
 
+      # if the shift isn't empty - don't insert the strongline
+      # this will also cover the case where a shift is locked
+      if len(shifts[i]) > 0:  # must be locked
+        add_shift = False
+
     if add_shift:
       # make a copy of the stronglong so we're not putting
       # the same strongline object into multiple shifts
       # this will mess up shift counting otherwise
       for p in sl:
         p.shifts += 1
-      shifts.append(sl.copy())
+      shifts[i] = sl.copy()
       #log.debug(f"add Shift: {sl[0].name} {sl[0].shifts}")
     else:
       log.debug(f"SHIFT LIMIT REACHED: {sl[0].name}")
@@ -221,8 +254,9 @@ def get_strongline_shifts(players, stronglines, num_shifts=8):
       shifts.insert((i + 1) * diff, [])
 
   # verify we have the proper amount of shifts
-  assert len(shifts) == num_shifts, "didn't get to the right number of shifts"
-  return shifts
+  assert len(
+      shifts
+  ) == num_shifts, f"didn't get to the right number of shifts {len(shifts)}"
 
 
 def fill_shifts(players, shifts, stronglines):
@@ -273,12 +307,9 @@ def fill_shifts(players, shifts, stronglines):
   return shifts
 
 
-def get_shifts(players, stronglines, num_shifts=8):
-  shifts = get_strongline_shifts(players, stronglines, num_shifts)
-  log.debug("STRONGLINE SHIFTS")
-  #print_shifts(shifts)
-  shifts = fill_shifts(players, shifts, stronglines)
-  return shifts
+def get_shifts(shifts, players, stronglines, num_shifts=8):
+  get_strongline_shifts(shifts, players, stronglines, num_shifts)
+  fill_shifts(players, shifts, stronglines)
 
 
 def verify_unique_players_on_shifts(shifts):

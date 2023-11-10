@@ -4,6 +4,7 @@ from logger import log as log
 import json
 import player
 import os
+import strong
 
 # fairtimesport.com - registered
 # fairplaytime.ca
@@ -96,15 +97,20 @@ def roster():
   return render_template('roster.html')
 
 
-@app.route('/runfairplay', methods=['GET'])
+@app.route('/runfairplay', methods=['POST'])
 def runfairplay():
-  # reset shifts - so if we continue to click fairplay - we don't exceed max shifts
-  fairplay.reset_player_shifts()
-  fairplay.shifts = []  # we're rebuilding shifts from scratch
+
+  # load data - to see what's locked
+  data = request.get_json()
+
+  # only clear the shifts that aren't locked
+  fairplay.clear_shifts_not_locked(data)
 
   # will take player list and run alogorithm
   # returning shifts to web page
   fairplay.run_fairplay_algo(fairplay.players, fairplay.stronglines)
+
+  fairplay.print_shifts(fairplay.shifts)
 
   return generate_json_data()
 
