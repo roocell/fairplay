@@ -74,11 +74,18 @@ def reset_player_shifts():
     p.shifts = 0
 
 
+def reset_player_locks():
+  global players, stronglines
+  for p in players:
+    p.lockedtoshift = [0] * 8
+
+
 def clear_shifts_not_locked(data):
   global shifts, players, stronglines
   # assume roster isn't changing
 
   reset_player_shifts()
+  reset_player_locks()
 
   # recreate the shifts array - but hold onto anything locked
   # if not locked we will fill in an empty shift
@@ -95,6 +102,7 @@ def clear_shifts_not_locked(data):
       else:
         # only keep (and update) locked players
         if pw["lockedtoshift"] == True:
+          log.debug(f"locking {pp.name}")
           pp.shifts += 1
           # we may be locking the player to the shift - update the player array
           pp.lockedtoshift[i] = int(pw["lockedtoshift"])
@@ -115,6 +123,7 @@ def update(data):
   log.debug(data)
 
   reset_player_shifts()
+  reset_player_locks()
 
   # reset server data
   serverSideRoster = players.copy()
@@ -150,7 +159,9 @@ def update(data):
         log.error(f"could not find player {pwname}")
       else:
         pp.shifts += 1
-        # we may be locking the player to the shift - update the player array
+        # we may be locking the player to the shift
+        # (but moved a player that triggered an update - for example)
+        # - update the player array
         pp.lockedtoshift[i] = int(pw["lockedtoshift"])
         s.append(pp)
     shifts.append(s)
