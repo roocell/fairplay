@@ -3,19 +3,19 @@
 # this can be used as a method to have the algorithm favour players
 
 [
-  {"name": "Zachary Shouldice Russell", "value": 5},
-  {"name": "Sebastien Clersaint", "value": 5},
-  {"name": "Iseoluwa Ola", "value": 5},
-  {"name": "Martin Leclair", "value": 5},
-  {"name": "Ben Lim", "value": 5},
-  {"name": "Julian Poblete", "value": 5},
-  {"name": "Alex Panagakos", "value": 6},
-  {"name": "Jageer Hundal", "value": 5},
-  {"name": "Lorenzo Braganza", "value": 6},
-  {"name": "Hayden Brennan", "value": 0},
-  {"name": "Blake Turcotte", "value": 6},
-  {"name": "Oliver Jeglic", "value": 6},
-  {"name": "Wes Frechette", "value": 4},
-  {"name": "Ben Larocque", "value": 4},
-  {"name": "Amani Tshepelayi Kabata", "value": 4}
+  {"name": "Zachary Shouldice Russell", "value": 1},
+  {"name": "Sebastien Clersaint", "value": 1},
+  {"name": "Iseoluwa Ola", "value": 1},
+  {"name": "Martin Leclair", "value": 1},
+  {"name": "Ben Lim", "value": 1},
+  {"name": "Julian Poblete", "value": 1},
+  {"name": "Alex Panagakos", "value": 1},
+  {"name": "Jageer Hundal", "value": 1},
+  {"name": "Lorenzo Braganza", "value": 1},
+  {"name": "Hayden Brennan", "value": 1},
+  {"name": "Blake Turcotte", "value": 1},
+  {"name": "Oliver Jeglic", "value": 1},
+  {"name": "Wes Frechette", "value": 1},
+  {"name": "Ben Larocque", "value": 1},
+  {"name": "Amani Tshepelayi Kabata", "value": 1}
 ]

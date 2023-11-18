@@ -138,12 +138,23 @@ def update(data):
   rosterFromClientSide = data["roster"]
   shiftsFromClientSide = data["shifts"]
 
-  for rpname in rosterFromClientSide:
-    p = player.find(serverSideRoster, rpname["name"])
+  # update roster
+  # 2 cases
+  # 1. removing player from mainpage
+  # 2. adding new player from roster page
+  for clientSidePlayer in rosterFromClientSide:
+    p = player.find(serverSideRoster, clientSidePlayer["name"])
     if p == None:
-      log.error(f"could not find player {rpname}")
-    else:
-      players.append(p)
+      # this could be an update from the roster page, adding new players
+      # let's just assume this.
+      # just update roster with new player
+      log.debug(f"addig new player: {clientSidePlayer['name']}")
+      p = player.Player(clientSidePlayer["name"], clientSidePlayer["number"])
+
+    players.append(p)
+
+  log.debug("New roster")
+  player.dump(players)
 
   # fixup stronglines (players could be removed from roster)
   stronglines = strong.reload(players, stronglines)

@@ -27,7 +27,7 @@ class Player:
     self.lockedtoshift = [0] * 8  # an array of bools for each shift
 
 
-def load(players_json, prevshift_json):
+def load(players_json, prevshifts_json):
   # load into an array of Players
   players = []
 

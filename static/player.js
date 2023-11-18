@@ -10,6 +10,8 @@ form.addEventListener("submit", (e) => {
 
   if (!number || !name) return;
 
+  // add player to the dom - then it'll get picked up when
+  // we send data back to the server
   const newPlayer = document.createElement("p");
   newPlayer.classList.add("player");
   newPlayer.setAttribute("draggable", "true");

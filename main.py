@@ -36,6 +36,12 @@ import strong
 #       this way roster page can reset to full roster, then goto game roster and remove
 #       players.
 # TODO: widgetize to plugin to other sites
+# TODO: teamsnap integration? parse webpage to get roster
+# TODO: plan out multiple games at once. (like for a tournament). would have to save game in a table and adjust prevshifts accordingly. this is a lot of functionality - would have to work on MUCH later. save game title and notes section in a saved game.
+# TODO: field to fill in game info for printing
+# TODO: notes section for printout
+# TODO: make another pass at the end to try and remove double shifts
+# TODO: might be useful to sort the roster by shifts so it's easy to see who's got the low numbers (while planning multiple games)
 
 app = Flask(
     __name__,
@@ -59,11 +65,13 @@ def home_page():
   current_directory = os.path.dirname(current_file_path)
 
   # run fairplay so we have all the data web the page comes up
-  fairplay.load(
-      current_directory + "/test/15p_3sl_0pv/players.json",
-      current_directory + "/test/15p_3sl_0pv/stronglines.json",
-      current_directory + "/test/15p_3sl_0pv/prevshifts.json",
-  )
+  # only do this if there's nothing there yet.
+  if len(fairplay.players) == 0:
+    fairplay.load(
+        current_directory + "/test/15p_3sl_0pv/players.json",
+        current_directory + "/test/15p_3sl_0pv/stronglines.json",
+        current_directory + "/test/15p_3sl_0pv/prevshifts.json",
+    )
 
   return render_template('index.html')
 
@@ -114,6 +122,9 @@ def runfairplay():
 
   return generate_json_data()
 
+
+# social login for flask using flask-dance
+# https://testdriven.io/blog/flask-social-auth/
 
 if __name__ == '__main__':
   # replit needs to use 0.0.0.0
