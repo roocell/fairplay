@@ -183,10 +183,20 @@ def logout():
     logout_user()
     return redirect(url_for("home_page"))
 
+# use free Certificate Authority (CA) https://letsencrypt.org/getting-started/
+# https://pimylifeup.com/raspberry-pi-ssl-lets-encrypt/
+# open port 80 for roocell.com
+# run
+# sudo certbot certonly --standalone -d roocell.com -d www.roocell.com
+# this generates certs locally with an expiry date (put these in the app.run() below)
+# have to rerun to renew
 
-
-
-
+# force https redirect
+@app.before_request
+def before_request():
+    if not request.is_secure and request.headers.get('X-Forwarded-Proto') != 'https':
+        url = request.url.replace('http://', 'https://', 1)
+        return redirect(url, code=301)
 
 myport = 4466
 if len(sys.argv) == 2:
@@ -194,4 +204,7 @@ if len(sys.argv) == 2:
 
 if __name__ == '__main__':
   # replit needs to use 0.0.0.0
-  app.run(host='0.0.0.0', port=myport, ssl_context = 'adhoc', debug=True)
+  app.run(host='0.0.0.0', port=myport, debug=True,
+          ssl_context=("/etc/letsencrypt/live/roocell.com/fullchain.pem", 
+                       "/etc/letsencrypt/live/roocell.com/privkey.pem")
+          )
