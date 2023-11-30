@@ -1,35 +1,22 @@
-<!DOCTYPE html>
-<!-- kudos to https://github.com/TomIsLoading/drag-and-drop-kanban to get us started -->
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Fairplay - Roster</title>
+{% extends '_base.html' %}
 
-    <link rel="stylesheet" href="/static/styles.css" />
-    <script src="/static/drag.js" defer></script>
-    <script src="/static/player.js" defer></script>
-    <script src="/static/ajax.js" defer></script>
-    <script src="/static/scrollaction.js" defer></script>
-    <script>
-      window.addEventListener('load', function() {
-        onLoadRoster();
-      });
-    </script>
-  </head>
-  <body>
-    <div class="board">
-      <form class="player-form" id="player-form">
-        <button type="button" onclick="window.location.href = '/'">Home</button>
-        <input type="text" class="player-input" style="width: 50px;" placeholder="#..." id="player-number" />
-        <input type="text" class="player-input" placeholder="New Player..." id="player-name" />
-        <button type="submit">Add +</button>
-      </form>
+{% block content %}
+<script>
+  window.addEventListener('load', function() {
+    onLoadRoster();
+  });
+</script>
+<div class="board">
+  <form class="player-form" id="player-form">
+    <button type="button" onclick="window.location.href = '/'">Home</button>
+    <input type="text" class="player-input" style="width: 50px;" placeholder="#..." id="player-number" />
+    <input type="text" class="player-input" placeholder="New Player..." id="player-name" />
+    <button type="submit">Add +</button>
+  </form>
 
-      <div class="lanes" id=lanes>
-        <!-- the roster and shifts will be generated here -->
-      </div> <!-- end of lanescon -->
-    </div>
-  </body>
-</html>
+  <div class="lanes" id=lanes>
+    <!-- the roster and shifts will be generated here -->
+  </div> <!-- end of lanescon -->
+</div>
+
+{% endblock content %}

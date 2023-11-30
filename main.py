@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from flask import Flask, render_template, flash, redirect, url_for, request
 import fairplay
 from logger import log as log
@@ -5,6 +7,16 @@ import json
 import player
 import os
 import strong
+import sys
+
+from flask import Flask, jsonify, render_template, flash, redirect, url_for, request, session
+from flask_dance.contrib.google import google
+from flask_dance.contrib.facebook import facebook
+from flask_login import logout_user, login_required, current_user
+from models import db, login_manager, User
+from oauth import google_blueprint, facebook_blueprint
+from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
+from oauthlib.oauth2.rfc6749.errors import MismatchingStateError
 
 # fairtimesport.com - registered
 # fairplaytime.ca
@@ -12,12 +24,9 @@ import strong
 # fairplay.app
 # fairplay.coach
 
-# TODO: add flask_socketio if we need async updates to web
-# TODO: add flask_sqlalchemy if we need to persist data
-# TODO: add flask_dance for social logins (https://testdriven.io/blog/flask-social-auth/, https://gist.github.com/MartinHarding/6f09588676f9ca911e9d52a87d8adc6f)
+# TODO: add flask_socketio if we need async updates to web (multi-user)
 # TODO: add flask_wtf if we need to add form validation
 # TODO: add flask_mail if we need to send emails
-# TODO: add flask_bcrypt if we need to hash passwords
 # TODO: generate notes under shifts with some explanations like
 #        - 4 players get 2 shifts when there are 15 players.
 # TODO: numbers and shifts as decorations rather than just text
@@ -126,6 +135,63 @@ def runfairplay():
 # social login for flask using flask-dance
 # https://testdriven.io/blog/flask-social-auth/
 
+app.secret_key = "supersekritkey"
+app.register_blueprint(google_blueprint, url_prefix="/login")
+app.register_blueprint(facebook_blueprint, url_prefix="/login")
+app.config['OAUTHLIB_INSECURE_TRANSPORT'] = 1
+app.config['OAUTHLIB_RELAX_TOKEN_SCOPE'] = 1 # google changes scope on us
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///./users.db"
+
+
+db.init_app(app)
+login_manager.init_app(app)
+
+with app.app_context():
+    db.create_all()
+
+@app.route("/google")
+def google_login():
+  if not google.authorized:
+    session.clear() # in case there was a bad session in the browser cache
+    redirect_url = url_for("google.authorized")
+    return redirect(redirect_url)
+  # try:
+  #   resp = google_blueprint.session.get("/oauth2/v1/userinfo")
+  # except TokenExpiredError:
+  #   print("token is expired: logging out")
+  #   logout_user()
+  #   # this doens't work - had to remove database
+  #   return redirect(url_for("home_page"))
+
+@app.route("/facebook")
+def facebook_login():
+  if not facebook.authorized:
+    session.clear() # in case there was a bad session in the browser cache
+    redirect_url = url_for("facebook.authorized")
+    return redirect(redirect_url)
+    # try:
+    #   return redirect(redirect_url)
+    # except MismatchingStateError as e:
+    #   log.debug(f"Caught MismatchingStateError: {e}")
+    #   session.clear()
+    # except Exception as e:
+    #   log.debug(f"Caught unexpected exception: {e}")
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for("home_page"))
+
+
+
+
+
+
+myport = 4466
+if len(sys.argv) == 2:
+  myport = sys.argv[1]
+
 if __name__ == '__main__':
   # replit needs to use 0.0.0.0
-  app.run(host='0.0.0.0', port=8080)
+  app.run(host='0.0.0.0', port=myport, ssl_context = 'adhoc', debug=True)

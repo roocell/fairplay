@@ -1,36 +1,47 @@
-<!DOCTYPE html>
-<!-- kudos to https://github.com/TomIsLoading/drag-and-drop-kanban to get us started -->
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Fairplay</title>
+{% extends '_base.html' %}
 
-    <link rel="stylesheet" href="/static/styles.css" />
-    <script src="/static/drag.js" defer></script>
-    <script src="/static/player.js" defer></script>
-    <script src="/static/ajax.js" defer></script>
-    <script src="/static/scrollaction.js" defer></script>
-    <script src="/static/drawer.js" defer></script>
-    <script>
-      window.addEventListener('load', function() {
-        onLoadMain();
-      });
-    </script>
-  </head>
-  <body>
-    <div class="drawer" id="drawer">
-    </div>
-    <div class="board">
-      <form class="player-form" id="player-form">
-        <button type="button" id=fairplay onclick="runfairplay()">Run Fairplay</button>
-        <button type="button" onclick="window.location.href = '/roster'">Roster</button>
-      </form>
+{% block content %}
+<script>
+  window.addEventListener('load', function() {
+    onLoadMain();
+  });
+</script>
 
-      <div class="lanes" id=lanes>
-        <!-- the roster and shifts will be generated here -->
-      </div> <!-- end of lanescon -->
-    </div>
-  </body>
-</html>
+<div class="drawer" id="drawer">
+</div>
+<div class="board">
+  <form class="player-form" id="player-form">
+
+  {% if current_user.is_authenticated %}
+    <button type="button" id=fairplay onclick="runfairplay()">Run Fairplay</button>
+    <button type="button" onclick="window.location.href = '/roster'">Roster</button>
+    <button type="button" onclick="window.location.href = '{{url_for('logout')}}'">
+      Logout
+      {% if current_user.service == "facebook" %}
+      <i class="fa fa-facebook-official fa-fw"></i>
+      {% else %}
+      <i class="fa fa-google fa-fw"></i>
+      {% endif %}
+      {% if not current_user.name  %}
+        {{current_user.email}}
+      {% else %}
+        {{current_user.name}}
+      {% endif %}
+    </button>
+  {% else %}
+    <button type="button" onclick="window.location.href = '{{url_for('google_login')}}'">
+      <i class="fa fa-google fa-fw"></i>
+      <span>Login with Google</span>
+    </button>
+    <button type="button" onclick="window.location.href = '{{url_for('facebook_login')}}'">
+      <i class="fa fa-facebook-official fa-fw"></i>
+      <span>Login with Facebook</span>
+    </button>
+  {% endif %}
+  </form>
+
+  <div class="lanes" id=lanes>
+    <!-- the roster and shifts will be generated here -->
+  </div> <!-- end of lanes -->
+</div>
+{% endblock content %}
