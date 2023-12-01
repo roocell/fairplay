@@ -26,7 +26,7 @@ class Player:
     self.violates = 0  # violates max shifts
     self.lockedtoshift = [0] * 8  # an array of bools for each shift
 
-
+# TODO: will have to fix the test scripts
 def load(players_json, prevshifts_json):
   # load into an array of Players
   players = []

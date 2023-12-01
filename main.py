@@ -62,14 +62,13 @@ def generate_json_data(players, shifts):
       "players": json.dumps(players, cls=player.PlayerEncoder),
       "shifts": json.dumps(shifts, cls=player.PlayerEncoder)
   }
-  #log.debug(data)
+  log.debug(data)
   return data
 
 
-@app.route('/')  # What happens when the user visits the site
+@app.route('/')
 def home_page():
-  if (google.authorized or facebook.authorized):
-    fairplay.load_from_db(current_user.username)
+  # data will be loaded with onload and the getdata route
   return render_template('index.html')
 
 # this route is for any form submission,
@@ -88,7 +87,7 @@ def updatedata():
   # this is ok - because we can remove the django code
   # in index.html - and generate the shifts all in the
   # same JS code.
-  fairplay.fairplay_validation()
+  fairplay.fairplay_validation(players, shifts)
   return generate_json_data(players, shifts)
 
 

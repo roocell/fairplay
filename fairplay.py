@@ -12,9 +12,9 @@ import double
 import models
 from sqlalchemy.orm.exc import NoResultFound
 from flask_login import current_user
-from models import db_get_shifts, db_get_players, db_get_stronglines
+from models import db_get_shifts, db_get_players, db_get_stronglines, db_add_player_to_roster
 
-def fairplay_validation():
+def fairplay_validation(players, shifts):
   if verify_shift_limits(players, shifts):
     log.debug("VERIFICATION PASSED")
 
@@ -31,24 +31,8 @@ def run_fairplay_algo():
   shifts = clear_shifts_not_locked(players, data)
 
   get_shifts(shifts, players, stronglines)
-  fairplay_validation()
+  fairplay_validation(players, shifts)
   return players, shifts
-
-def load_from_db(username):
-  # get user.id based on username
-  # use that to pull roster from players table
-  query = models.User.query.filter_by(username=username)
-  try:
-      user = query.one()      
-  except NoResultFound:
-    log.debug(f"could not find username {username}")
-    return
-  query = models.Player.query.filter_by(user_id=user.id)
-  try:
-    players = query.all()
-    log.debug(f"found {len(players)} players in db for user_id {user.id}")
-  except NoResultFound:
-    log.debug(f"did not find any entries in player table for user_id {user.id}")
 
 
 def load_from_file(players_file, stronglines_file, prevshifts_file):
@@ -162,6 +146,7 @@ def update(data):
       log.debug(f"adding new player: {clientSidePlayer['name']}")
       p = player.Player(clientSidePlayer["name"], clientSidePlayer["number"])
 
+    db_add_player_to_roster(current_user.id, p.name, p.number)
     players.append(p)
 
   log.debug("New roster")

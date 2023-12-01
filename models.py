@@ -1,7 +1,9 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, LoginManager
 from flask_dance.consumer.storage.sqla import OAuthConsumerMixin
-
+from flask import session
+from logger import log as log
+import player
 
 db = SQLAlchemy()
 
@@ -34,11 +36,28 @@ login_manager = LoginManager()
 def load_user(user_id):
     return User.query.get(user_id)
 
+def db_add_player_to_roster(user_id, player_name, player_number):
+    player = Player(name=player_name, number=player_number, user_id=user_id)
+    db.session.add(player)
+    db.session.commit()
+
 def db_get_shifts(user_id):
     shifts = [[] for _ in range(8)] # 8 empty shifts
     return shifts;
 def db_get_players(user_id):
-    return [];
+    # read players from db
+    query = Player.query.filter_by(user_id=user_id)
+    dbplayers = query.all()
+    log.debug(f"found {len(dbplayers)} players in database for user_id {user_id}")
+    # create array of player.py players
+    # TODO: in flask session ?
+
+    players = []
+    for dbp in dbplayers:
+        p = player.Player(dbp.name, dbp.number)
+        players.append(p)
+
+    return players;
 def db_get_stronglines(user_id):
     return [];
 
