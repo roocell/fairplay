@@ -17,6 +17,7 @@ from models import db, login_manager, User
 from oauth import google_blueprint, facebook_blueprint
 from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
 from oauthlib.oauth2.rfc6749.errors import MismatchingStateError
+from models import db_get_players_and_shifts
 
 # fairtimesport.com - registered
 # fairplaytime.ca
@@ -41,9 +42,6 @@ from oauthlib.oauth2.rfc6749.errors import MismatchingStateError
 #       ios/andriod.
 #       https://github.com/computerjazz/react-native-draggable-flatlist
 #       https://github.com/marconunnari/trello-clone
-# TODO: roster page should operate on full roster. fairplay page operates on game roster.
-#       this way roster page can reset to full roster, then goto game roster and remove
-#       players.
 # TODO: widgetize to plugin to other sites
 # TODO: teamsnap integration? parse webpage to get roster
 # TODO: plan out multiple games at once. (like for a tournament). would have to save game in a table and adjust prevshifts accordingly. this is a lot of functionality - would have to work on MUCH later. save game title and notes section in a saved game.
@@ -59,10 +57,10 @@ app = Flask(
 )
 
 
-def generate_json_data():
+def generate_json_data(players, shifts):
   data = {
-      "players": json.dumps(fairplay.players, cls=player.PlayerEncoder),
-      "shifts": json.dumps(fairplay.shifts, cls=player.PlayerEncoder)
+      "players": json.dumps(players, cls=player.PlayerEncoder),
+      "shifts": json.dumps(shifts, cls=player.PlayerEncoder)
   }
   #log.debug(data)
   return data
@@ -70,28 +68,18 @@ def generate_json_data():
 
 @app.route('/')  # What happens when the user visits the site
 def home_page():
-  current_file_path = os.path.abspath(__file__)
-  current_directory = os.path.dirname(current_file_path)
-
-  # run fairplay so we have all the data web the page comes up
-  # only do this if there's nothing there yet.
-  if len(fairplay.players) == 0:
-    fairplay.load(
-        current_directory + "/test/15p_3sl_0pv/players.json",
-        current_directory + "/test/15p_3sl_0pv/stronglines.json",
-        current_directory + "/test/15p_3sl_0pv/prevshifts.json",
-    )
-
+  if (google.authorized or facebook.authorized):
+    fairplay.load_from_db(current_user.username)
   return render_template('index.html')
 
-
-# Define a route to handle form submission
+# this route is for any form submission,
+# moving players, deleting players
 @app.route('/updatedata', methods=['POST'])
 def updatedata():
   # take shifts from web and update our local copy
   data = request.get_json()
   #log.debug(data)
-  fairplay.update(data)
+  players, shifts = fairplay.update(data)
   # all the smarts are done in python code.
   # so when a player moves we need to run part of the
   # fairplay logic and feed back the information back to
@@ -101,12 +89,13 @@ def updatedata():
   # in index.html - and generate the shifts all in the
   # same JS code.
   fairplay.fairplay_validation()
-  return generate_json_data()
+  return generate_json_data(players, shifts)
 
 
 @app.route('/getdata', methods=['GET'])
 def getdata():
-  return generate_json_data()
+  players, shifts = db_get_players_and_shifts(current_user.id)
+  return generate_json_data(players, shifts)
 
 
 @app.route('/roster', methods=['GET'])
@@ -120,16 +109,11 @@ def runfairplay():
   # load data - to see what's locked
   data = request.get_json()
 
-  # only clear the shifts that aren't locked
-  fairplay.clear_shifts_not_locked(data)
-
   # will take player list and run alogorithm
   # returning shifts to web page
-  fairplay.run_fairplay_algo(fairplay.players, fairplay.stronglines)
+  players, shifts = fairplay.run_fairplay_algo()
 
-  fairplay.print_shifts(fairplay.shifts)
-
-  return generate_json_data()
+  return generate_json_data(players, shifts)
 
 
 # social login for flask using flask-dance

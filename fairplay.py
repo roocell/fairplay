@@ -9,23 +9,10 @@ import argparse
 import commentjson
 import prevshift
 import double
-
-# input
-# players.txt  - a list of players
-# stronglines.txt - a list of strong 3 player groups
-# prevshifts.txt - a list of comma separated values game#,player,minutes
-#           - this is a running file of all the minutes played by a player for all games
-# output
-#   dumps the recommended shifts for the next game
-
-players = []  # an array of Players
-stronglines = []  # an array of an array of Players
-shifts = []  # an array of an array of Players
-
-# default some empty shifts so they get drawn in web very first time
-for i in range(8):
-  shifts.append([])
-
+import models
+from sqlalchemy.orm.exc import NoResultFound
+from flask_login import current_user
+from models import db_get_shifts, db_get_players, db_get_stronglines
 
 def fairplay_validation():
   if verify_shift_limits(players, shifts):
@@ -33,16 +20,38 @@ def fairplay_validation():
 
   verify_unique_players_on_shifts(shifts)
   double.check_consecutive(players, shifts)
-  #print_shifts(shifts)
 
+def run_fairplay_algo():
+  # load server side data from database
+  shifts = db_get_shifts(current_user.id)
+  players = db_get_players(current_user.id)
+  stronglines = db_get_stronglines(current_user.id)  
 
-def run_fairplay_algo(players, stronglines):
-  global shifts
+    # only clear the shifts that aren't locked
+  shifts = clear_shifts_not_locked(players, data)
+
   get_shifts(shifts, players, stronglines)
   fairplay_validation()
+  return players, shifts
+
+def load_from_db(username):
+  # get user.id based on username
+  # use that to pull roster from players table
+  query = models.User.query.filter_by(username=username)
+  try:
+      user = query.one()      
+  except NoResultFound:
+    log.debug(f"could not find username {username}")
+    return
+  query = models.Player.query.filter_by(user_id=user.id)
+  try:
+    players = query.all()
+    log.debug(f"found {len(players)} players in db for user_id {user.id}")
+  except NoResultFound:
+    log.debug(f"did not find any entries in player table for user_id {user.id}")
 
 
-def load(players_file, stronglines_file, prevshifts_file):
+def load_from_file(players_file, stronglines_file, prevshifts_file):
   with open(players_file, "r") as file:
     file_contents = file.read()
     players_json = commentjson.loads(file_contents)
@@ -53,12 +62,11 @@ def load(players_file, stronglines_file, prevshifts_file):
     file_contents = file.read()
   prevshifts_json = commentjson.loads(file_contents)
 
-  global players, stronglines
   players = player.load(players_json, prevshifts_json)
   player.dump(players)
 
   stronglines = strong.load(players, stronglines_json)
-  #strong.dump(stronglines)
+  return (players, stronglines)
 
 
 def find_player_in_shift(player_name, shift):
@@ -68,24 +76,21 @@ def find_player_in_shift(player_name, shift):
   return None
 
 
-def reset_player_shifts():
-  global players, stronglines
+def reset_player_shifts(players):
   for p in players:
     p.shifts = 0
 
 
-def reset_player_locks():
-  global players, stronglines
+def reset_player_locks(players):
   for p in players:
     p.lockedtoshift = [0] * 8
 
 
-def clear_shifts_not_locked(data):
-  global shifts, players, stronglines
+def clear_shifts_not_locked(players, data):
   # assume roster isn't changing
 
-  reset_player_shifts()
-  reset_player_locks()
+  reset_player_shifts(players)
+  reset_player_locks(players)
 
   # recreate the shifts array - but hold onto anything locked
   # if not locked we will fill in an empty shift
@@ -108,6 +113,7 @@ def clear_shifts_not_locked(data):
           pp.lockedtoshift[i] = int(pw["lockedtoshift"])
           s.append(pp)
     shifts.append(s)
+  return shifts
 
 
 # updates server side view of roster and shifts (from web actions)
@@ -117,13 +123,18 @@ def clear_shifts_not_locked(data):
 # TODO: we could use player number instead of name to make it more efficient
 # TODO: should have strong validation here for security
 def update(data):
-  global shifts, players, stronglines
 
   log.debug("updating server side data")
   log.debug(data)
 
-  reset_player_shifts()
-  reset_player_locks()
+  # load server side data from database
+  shifts = db_get_shifts(current_user.id)
+  players = db_get_players(current_user.id)
+  stronglines = db_get_stronglines(current_user.id)
+
+
+  reset_player_shifts(players)
+  reset_player_locks(players)
 
   # reset server data
   serverSideRoster = players.copy()
@@ -140,7 +151,7 @@ def update(data):
 
   # update roster
   # 2 cases
-  # 1. removing player from mainpage
+  # 1. removing roster player from mainpage
   # 2. adding new player from roster page
   for clientSidePlayer in rosterFromClientSide:
     p = player.find(serverSideRoster, clientSidePlayer["name"])
@@ -148,7 +159,7 @@ def update(data):
       # this could be an update from the roster page, adding new players
       # let's just assume this.
       # just update roster with new player
-      log.debug(f"addig new player: {clientSidePlayer['name']}")
+      log.debug(f"adding new player: {clientSidePlayer['name']}")
       p = player.Player(clientSidePlayer["name"], clientSidePlayer["number"])
 
     players.append(p)
@@ -179,13 +190,13 @@ def update(data):
 
   double.check_consecutive(players, shifts)
   print_shifts(shifts)
+  return (players, shifts)
 
 
 def load_files_and_run(players_file, stronglines_file, prevshifts_file):
-  load(players_file, stronglines_file, prevshifts_file)
-  global players, stronglines, shifts
-  shifts = []
-  run_fairplay_algo(players, stronglines)
+  # TODO: load from file and put into db 
+  players, stronglines = load_from_file(players_file, stronglines_file, prevshifts_file)
+  players, shifts = run_fairplay_algo()
   assert_shift_limits(players, shifts)
 
 
