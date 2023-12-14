@@ -16,10 +16,16 @@ shift_numbers[8] = [(6, 4), (4, 4)]
 shift_numbers[7] = [(6, 5), (5, 2)]
 shift_numbers[6] = [(7, 5), (5, 1)]
 shift_numbers[5] = [(8, 5)]
+shift_numbers[4] = [(8,4)]
+shift_numbers[3] = [(8,3)]
+shift_numbers[2] = [(8,2)]
+shift_numbers[1] = [(8,1)]
+shift_numbers[0] = [(8,0)]
 
 
 # returns an array of shift_cnt, players
 def get_shift_limits(num_players):
+
   return shift_numbers[num_players]
 
 
@@ -35,6 +41,7 @@ def get_pcount_for_max_shifts(num_players):
 
 def get_max_shifts(num_players):
   max = 0
+
   for t in shift_numbers[num_players]:
     if t[0] > max:
       max = t[0]

@@ -45,6 +45,7 @@ from models import db_get_players_and_shifts
 # TODO: widgetize to plugin to other sites
 # TODO: teamsnap integration? parse webpage to get roster
 # TODO: plan out multiple games at once. (like for a tournament). would have to save game in a table and adjust prevshifts accordingly. this is a lot of functionality - would have to work on MUCH later. save game title and notes section in a saved game.
+#       save games and present them in a dropdown list in toolbar - load when selected.
 # TODO: field to fill in game info for printing
 # TODO: notes section for printout
 # TODO: make another pass at the end to try and remove double shifts
@@ -93,6 +94,8 @@ def updatedata():
 
 @app.route('/getdata', methods=['GET'])
 def getdata():
+  if current_user.is_authenticated == False:
+     return "OK"
   players, shifts = db_get_players_and_shifts(current_user.id)
   return generate_json_data(players, shifts)
 
@@ -110,7 +113,7 @@ def runfairplay():
 
   # will take player list and run alogorithm
   # returning shifts to web page
-  players, shifts = fairplay.run_fairplay_algo()
+  players, shifts = fairplay.run_fairplay_algo(data)
 
   return generate_json_data(players, shifts)
 

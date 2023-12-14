@@ -21,14 +21,15 @@ def fairplay_validation(players, shifts):
   verify_unique_players_on_shifts(shifts)
   double.check_consecutive(players, shifts)
 
-def run_fairplay_algo():
+def run_fairplay_algo(data):
   # load server side data from database
   shifts = db_get_shifts(current_user.id)
   players = db_get_players(current_user.id)
   stronglines = db_get_stronglines(current_user.id)  
 
+  if data != None:
     # only clear the shifts that aren't locked
-  shifts = clear_shifts_not_locked(players, data)
+    shifts = clear_shifts_not_locked(players, data)
 
   get_shifts(shifts, players, stronglines)
   fairplay_validation(players, shifts)
@@ -133,10 +134,15 @@ def update(data):
   rosterFromClientSide = data["roster"]
   shiftsFromClientSide = data["shifts"]
 
+  rosterpage = False
+  if len(shiftsFromClientSide) == 0:
+    rosterpage = True
+
   # update roster
   # 2 cases
   # 1. removing roster player from mainpage
   # 2. adding new player from roster page
+  # 3. permenantly removing a player from the roster page
   for clientSidePlayer in rosterFromClientSide:
     p = player.find(serverSideRoster, clientSidePlayer["name"])
     if p == None:
@@ -146,7 +152,10 @@ def update(data):
       log.debug(f"adding new player: {clientSidePlayer['name']}")
       p = player.Player(clientSidePlayer["name"], clientSidePlayer["number"])
 
-    db_add_player_to_roster(current_user.id, p.name, p.number)
+      # update persistant copy
+      db_add_player_to_roster(current_user.id, p.name, p.number)
+
+    # update non-persistant copy
     players.append(p)
 
   log.debug("New roster")
@@ -181,7 +190,7 @@ def update(data):
 def load_files_and_run(players_file, stronglines_file, prevshifts_file):
   # TODO: load from file and put into db 
   players, stronglines = load_from_file(players_file, stronglines_file, prevshifts_file)
-  players, shifts = run_fairplay_algo()
+  players, shifts = run_fairplay_algo(None)
   assert_shift_limits(players, shifts)
 
 
@@ -206,6 +215,10 @@ def get_players_not_at_max_shifts(players, shifts):
 # build a set of groups of strongline players
 # this is how we start building our shifts
 def get_strongline_shifts(shifts, players, stronglines, num_shifts=8):
+  # if there's no stronglines defined - do nothing
+  if len(stronglines) == 0:
+    return
+  
   # shuffle them so we don't always have the same starting line
   random.shuffle(stronglines)
 
@@ -297,7 +310,7 @@ def fill_shifts(players, shifts, stronglines):
   max_shifts = get_max_shifts(len(players))
 
   for s in shifts:
-    while len(s) < 5:  # keep going until the shift is full
+    while len(s) < 5 and len(s) < len(next_players):  # keep going until the shift is full
       #log.debug("next_players")
       #player.dump(next_players)
 
