@@ -78,7 +78,7 @@ function updatedata()
         }
     }).then(data => {
         // Handle the JSON data received from the server
-        updateDom(data);
+        updateDom(true, data);
     }).catch(error => {
         // Handle any network or request-related errors here
         console.error(error);
@@ -86,6 +86,8 @@ function updatedata()
 
 }
 
+// populates the DOM with the roster
+// used on both the main page and the roster page
 function updateDomRoster(data)
 {
   // update the roster in the DOM with the players again
@@ -165,30 +167,34 @@ function handleLockClick(lockimg)
   
 }
 
-function updateDom(data)
-{
-  console.log("updating DOM:");
-  console.log(data);
+function capitalizeFirstLetter(inputString) {
+  return inputString[0].toUpperCase() + inputString.slice(1);
+}
 
-  // always clear the lanes div - so it can be repopulated with shifts
-  // update the DOM with the new shifts
-  var lanes = document.getElementById("lanes");
-  lanes.innerHTML = "";
-  
-  updateDomRoster(data);
+function updateDomShifts(mainpage, data)
+{
+  // on the mainpage we display the shifts
+  // on the roster page we display the groups
+  if (mainpage)
+  {
+    prefix = "shift"
+    shiftdata = data.shifts;
+  } else {
+    prefix = "group"
+    shiftdata = data.groups;
+  }
+
+  // groups will reuse the shifts class for CSS
 
   // put a div around the shifts so we can do 2 rows of 4
   var shiftscontainer = document.createElement('div');
-  shiftscontainer.id = "shiftscontainer";
-  shiftscontainer.className = "shiftscontainer";
+  shiftscontainer.id = prefix + "s" + "container";
+  shiftscontainer.className = "shift" + "s" + "container";
 
   var shiftsrow1 = document.createElement('div');
-  shiftsrow1.id = "shiftsrow";
-  shiftsrow1.className = "shiftsrow";
-
   var shiftsrow2 = document.createElement('div');
-  shiftsrow2.id = "shiftsrow";
-  shiftsrow2.className = "shiftsrow";
+  shiftsrow1.id = shiftsrow2.id = prefix + "s" + "row";
+  shiftsrow1.className = shiftsrow2.className = "shift" + "s" + "row";
 
   shiftscontainer.appendChild(shiftsrow1);
   shiftscontainer.appendChild(shiftsrow2);
@@ -196,12 +202,12 @@ function updateDom(data)
   lanes.appendChild(shiftscontainer);
 
   var i = 0;
-  var shiftsData = JSON.parse(data.shifts);
+  var shiftsData = JSON.parse(shiftdata);
   shiftsData.forEach(function(shift) {
     i++;
     var shiftdiv = document.createElement('div');
     shiftdiv.className = "shift";
-    shiftdiv.id = "shift" + i;
+    shiftdiv.id = prefix + i;
 
     // add lock button to shiftdiv
     var lockimg = document.createElement('img');
@@ -211,13 +217,17 @@ function updateDom(data)
     lockimg.onclick = function() {
       handleLockClick(lockimg);
     };
-    //<a href="https://www.flaticon.com/free-icons/lock" title="lock icons">Lock icons created by Dave Gandy - Flaticon</a>
-    shiftdiv.appendChild(lockimg);
+
+    if (mainpage)
+    {
+      //<a href="https://www.flaticon.com/free-icons/lock" title="lock icons">Lock icons created by Dave Gandy - Flaticon</a>
+      shiftdiv.appendChild(lockimg);
+    }
     
     var header = document.createElement('h3');
     header.className = "heading";
     header.style.textAlign = "right";
-    header.innerHTML = "Shift" + i;
+    header.innerHTML = capitalizeFirstLetter(prefix) + i;
     shiftdiv.appendChild(header);
    
     shift.forEach(function(player) {
@@ -256,6 +266,28 @@ function updateDom(data)
       shiftsrow2.appendChild(shiftdiv);
     }
   });
+}
+
+// used for both the main page and the roster page
+// roster page uses shift divs for 'groups'(stronglines)
+function updateDom(mainpage, data)
+{
+  if (mainpage == true)
+  {
+    console.log("updating DOM main:");
+  } else {
+    console.log("updating DOM roster:");
+  }
+
+  console.log(data);
+
+  // always clear the lanes div - so it can be repopulated with shifts
+  // update the DOM with the new shifts
+  var lanes = document.getElementById("lanes");
+  lanes.innerHTML = "";
+  
+  updateDomRoster(data);
+  updateDomShifts(mainpage, data);
   setupDraggablesAndDroppables();
 }
 
@@ -276,7 +308,7 @@ function getserverdata()
         }
     }).then(data => {
         // Handle the JSON data received from the server
-        updateDom(data);
+        updateDom(true, data);
     }).catch(error => {
         // Handle any network or request-related errors here
         console.error(error);
@@ -300,8 +332,7 @@ function getserverdata_roster()
         }
     }).then(data => {
         // Handle the JSON data received from the server
-        updateDomRoster(data);
-        setupDraggablesAndDroppables();
+        updateDom(false, data);
       }).catch(error => {
         // Handle any network or request-related errors here
         console.error(error);
@@ -330,7 +361,7 @@ function runfairplay()
         }
     }).then(data => {
         // Handle the JSON data received from the server
-        updateDom(data);
+        updateDom(true, data);
     }).catch(error => {
         // Handle any network or request-related errors here
         console.error(error);

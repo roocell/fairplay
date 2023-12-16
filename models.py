@@ -48,6 +48,10 @@ def db_remove_player_from_roster(user_id, player_name, player_number):
         db.session.delete(player)
         db.session.commit()
 
+def db_get_groups(user_id):
+    shifts = [[] for _ in range(3)] # 3 empty groups
+    return shifts;
+
 def db_get_shifts(user_id):
     shifts = [[] for _ in range(8)] # 8 empty shifts
     return shifts;
@@ -68,6 +72,6 @@ def db_get_players(user_id):
 def db_get_stronglines(user_id):
     return [];
 
-def db_get_players_and_shifts(user_id):
-    return (db_get_players(user_id), db_get_shifts(user_id))
+def db_get_data(user_id):
+    return (db_get_players(user_id), db_get_shifts(user_id), db_get_groups(user_id))
 

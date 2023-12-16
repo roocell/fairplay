@@ -17,7 +17,7 @@ from models import db, login_manager, User
 from oauth import google_blueprint, facebook_blueprint
 from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
 from oauthlib.oauth2.rfc6749.errors import MismatchingStateError
-from models import db_get_players_and_shifts
+from models import db_get_data
 
 # fairtimesport.com - registered
 # fairplaytime.ca
@@ -58,10 +58,11 @@ app = Flask(
 )
 
 
-def generate_json_data(players, shifts):
+def generate_json_data(players, shifts, groups):
   data = {
       "players": json.dumps(players, cls=player.PlayerEncoder),
-      "shifts": json.dumps(shifts, cls=player.PlayerEncoder)
+      "shifts": json.dumps(shifts, cls=player.PlayerEncoder),
+      "groups": json.dumps(groups, cls=player.PlayerEncoder),
   }
   log.debug(data)
   return data
@@ -89,15 +90,15 @@ def updatedata():
   # in index.html - and generate the shifts all in the
   # same JS code.
   fairplay.fairplay_validation(players, shifts)
-  return generate_json_data(players, shifts)
+  return generate_json_data(players, shifts, [])
 
 
 @app.route('/getdata', methods=['GET'])
 def getdata():
   if current_user.is_authenticated == False:
      return "OK"
-  players, shifts = db_get_players_and_shifts(current_user.id)
-  return generate_json_data(players, shifts)
+  players, shifts, groups = db_get_data(current_user.id)
+  return generate_json_data(players, shifts, groups)
 
 
 @app.route('/roster', methods=['GET'])
@@ -115,7 +116,7 @@ def runfairplay():
   # returning shifts to web page
   players, shifts = fairplay.run_fairplay_algo(data)
 
-  return generate_json_data(players, shifts)
+  return generate_json_data(players, shifts, [])
 
 
 # social login for flask using flask-dance
