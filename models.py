@@ -4,6 +4,7 @@ from flask_dance.consumer.storage.sqla import OAuthConsumerMixin
 from flask import session
 from logger import log as log
 import player
+import commentjson
 
 db = SQLAlchemy()
 
@@ -32,6 +33,18 @@ login_manager = LoginManager()
 
 @login_manager.user_loader
 def load_user(user_id):
+    # if there's no players for roocell - then populate from json
+    query = Player.query.filter_by(user_id=user_id)
+    dbplayers = query.all()
+    if len(dbplayers) == 0:
+        with open("test/15p_3sl_0pv/players.json", "r") as file:
+            file_contents = file.read()
+            players_json = commentjson.loads(file_contents)   
+        players = player.load(players_json, None)
+        for p in players:
+            db.session.add(Player(name=p.name, number=p.number, user_id=user_id))
+        db.session.commit()
+
     return User.query.get(user_id)
 
 def db_add_player_to_roster(user_id, player_name, player_number):

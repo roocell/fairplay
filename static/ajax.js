@@ -318,9 +318,14 @@ function getserverdata()
             // Handle errors or non-successful responses here
             throw new Error('Request failed with status: ' + response.status);
         }
-    }).then(data => {
+    }).then(data => {     
         // Handle the JSON data received from the server
-        updateDom(true, data);
+        if (data.status == "ok")
+        {
+          updateDom(true, data);
+        } else {
+          console.log(data)
+        }
     }).catch(error => {
         // Handle any network or request-related errors here
         console.error(error);

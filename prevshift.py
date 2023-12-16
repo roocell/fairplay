@@ -1,7 +1,7 @@
 from logger import log as log
 import player
 
-enabled = True
+enabled = False
 
 
 def load(players, prevshifts_json):

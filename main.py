@@ -60,6 +60,7 @@ app = Flask(
 
 def generate_json_data(players, shifts, groups):
   data = {
+      "status" : "ok",
       "players": json.dumps(players, cls=player.PlayerEncoder),
       "shifts": json.dumps(shifts, cls=player.PlayerEncoder),
       "groups": json.dumps(groups, cls=player.PlayerEncoder),
@@ -96,7 +97,7 @@ def updatedata():
 @app.route('/getdata', methods=['GET'])
 def getdata():
   if current_user.is_authenticated == False:
-     return "OK"
+     return json.dumps({"status" : "not_logged_in"})
   players, shifts, groups = db_get_data(current_user.id)
   log.debug(groups)
   return generate_json_data(players, shifts, groups)
@@ -128,7 +129,7 @@ app.register_blueprint(google_blueprint, url_prefix="/login")
 app.register_blueprint(facebook_blueprint, url_prefix="/login")
 app.config['OAUTHLIB_INSECURE_TRANSPORT'] = 1
 app.config['OAUTHLIB_RELAX_TOKEN_SCOPE'] = 1 # google changes scope on us
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///./users.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///./fairplay.db"
 
 
 db.init_app(app)
