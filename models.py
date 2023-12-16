@@ -69,8 +69,6 @@ def db_get_players(user_id):
         players.append(p)
 
     return players;
-def db_get_stronglines(user_id):
-    return [];
 
 def db_get_data(user_id):
     return (db_get_players(user_id), db_get_shifts(user_id), db_get_groups(user_id))

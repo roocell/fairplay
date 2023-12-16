@@ -80,7 +80,7 @@ def updatedata():
   # take shifts from web and update our local copy
   data = request.get_json()
   #log.debug(data)
-  players, shifts = fairplay.update(data)
+  players, shifts, groups = fairplay.update(data)
   # all the smarts are done in python code.
   # so when a player moves we need to run part of the
   # fairplay logic and feed back the information back to
@@ -90,7 +90,7 @@ def updatedata():
   # in index.html - and generate the shifts all in the
   # same JS code.
   fairplay.fairplay_validation(players, shifts)
-  return generate_json_data(players, shifts, [])
+  return generate_json_data(players, shifts, groups)
 
 
 @app.route('/getdata', methods=['GET'])

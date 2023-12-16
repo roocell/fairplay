@@ -21,6 +21,7 @@ function getdomdata()
 {
   var data = {
     shifts: [],
+    groups: [],
     roster: []
   };
   
@@ -50,6 +51,20 @@ function getdomdata()
         });
     data.shifts.push(parray)
   });
+
+  var groups = document.querySelectorAll(".group");
+  groups.forEach(function(group) {
+    // inside each shift is a player class
+    var parray = new Array();
+    var players = group.querySelectorAll(".player");
+        players.forEach(function(player) {
+          parray.push({
+            "name" : player.id,
+              })
+        });
+    data.groups.push(parray)
+  });
+
   return data;
 }
 
@@ -78,7 +93,7 @@ function updatedata()
         }
     }).then(data => {
         // Handle the JSON data received from the server
-        updateDom(true, data);
+        updateDom(window.location.href.includes("roster") ? false : true, data);
     }).catch(error => {
         // Handle any network or request-related errors here
         console.error(error);
@@ -189,12 +204,12 @@ function updateDomShifts(mainpage, data)
   // put a div around the shifts so we can do 2 rows of 4
   var shiftscontainer = document.createElement('div');
   shiftscontainer.id = prefix + "s" + "container";
-  shiftscontainer.className = "shift" + "s" + "container";
+  shiftscontainer.className = prefix + "s" + "container";
 
   var shiftsrow1 = document.createElement('div');
   var shiftsrow2 = document.createElement('div');
   shiftsrow1.id = shiftsrow2.id = prefix + "s" + "row";
-  shiftsrow1.className = shiftsrow2.className = "shift" + "s" + "row";
+  shiftsrow1.className = shiftsrow2.className = prefix + "s" + "row"; // TODO: there's no groupsrow class (but ok?)
 
   shiftscontainer.appendChild(shiftsrow1);
   shiftscontainer.appendChild(shiftsrow2);
@@ -206,7 +221,7 @@ function updateDomShifts(mainpage, data)
   shiftsData.forEach(function(shift) {
     i++;
     var shiftdiv = document.createElement('div');
-    shiftdiv.className = "shift";
+    shiftdiv.className = prefix;
     shiftdiv.id = prefix + i;
 
     // add lock button to shiftdiv

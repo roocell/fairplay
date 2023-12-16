@@ -12,7 +12,7 @@ import double
 import models
 from sqlalchemy.orm.exc import NoResultFound
 from flask_login import current_user
-from models import db_get_shifts, db_get_players, db_get_stronglines, db_add_player_to_roster, db_remove_player_from_roster
+from models import db_get_shifts, db_get_players, db_get_groups, db_add_player_to_roster, db_remove_player_from_roster
 
 def fairplay_validation(players, shifts):
   if verify_shift_limits(players, shifts):
@@ -114,8 +114,8 @@ def update(data):
 
   # load server side data from database
   shifts = db_get_shifts(current_user.id)
+  groups = db_get_groups(current_user.id)
   players = db_get_players(current_user.id)
-  stronglines = db_get_stronglines(current_user.id)
 
 
   reset_player_shifts(players)
@@ -173,6 +173,7 @@ def update(data):
   player.dump(players)
 
   # fixup stronglines (players could be removed from roster)
+  stronglines = groups
   stronglines = strong.reload(players, stronglines)
   strong.dump(stronglines)
 
@@ -195,7 +196,7 @@ def update(data):
 
   double.check_consecutive(players, shifts)
   print_shifts(shifts)
-  return (players, shifts)
+  return (players, shifts, groups)
 
 
 def load_files_and_run(players_file, stronglines_file, prevshifts_file):

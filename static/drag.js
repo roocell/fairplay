@@ -57,7 +57,7 @@ function playerTouchStart(e)
         // for mobile (touch) the hover event doesn't work either
         // so we need to track over to see if it's hovering over the shift
         // blocks and do things here too.
-        const droppables = document.querySelectorAll(".shift");
+        const droppables = [...document.querySelectorAll(".shift"), ...document.querySelectorAll(".group")];
         droppables.forEach((droppable) => {
           if (ifTouchInDroppable(touch, droppable))
           {
@@ -301,7 +301,7 @@ function trashDragLeaveBehavior(e)
 function setupDraggablesAndDroppables()
 {
   const draggables = document.querySelectorAll(".player");
-  const droppables = document.querySelectorAll(".shift");
+  const droppables = [...document.querySelectorAll(".shift"), ...document.querySelectorAll(".group")];
  
   draggables.forEach((player) => {
     player.style.backgroundColor = player.getAttribute('data-backgroundColor');
