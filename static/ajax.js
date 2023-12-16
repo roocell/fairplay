@@ -30,9 +30,6 @@ function getdomdata()
   players.forEach((player) => {
     data.roster.push({
       "name" : player.id,
-      "number" : player.dataset.number
-      // TODO: the existing roster players don't have dataset.number set - but seems ok still.
-      //       it reduces the amount of data sent back to the server anyways
     })
   });
   
@@ -60,7 +57,7 @@ function getdomdata()
         players.forEach(function(player) {
           parray.push({
             "name" : player.id,
-              })
+          })
         });
     data.groups.push(parray)
   });

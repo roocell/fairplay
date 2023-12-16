@@ -98,6 +98,7 @@ def getdata():
   if current_user.is_authenticated == False:
      return "OK"
   players, shifts, groups = db_get_data(current_user.id)
+  log.debug(groups)
   return generate_json_data(players, shifts, groups)
 
 

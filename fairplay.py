@@ -12,7 +12,7 @@ import double
 import models
 from sqlalchemy.orm.exc import NoResultFound
 from flask_login import current_user
-from models import db_get_shifts, db_get_players, db_get_groups, db_add_player_to_roster, db_remove_player_from_roster
+from models import db_get_shifts, db_get_players, db_get_groups, db_add_player_to_roster, db_remove_player_from_roster, db_set_groups, db_get_groups
 
 def fairplay_validation(players, shifts):
   if verify_shift_limits(players, shifts):
@@ -25,13 +25,13 @@ def run_fairplay_algo(data):
   # load server side data from database
   shifts = db_get_shifts(current_user.id)
   players = db_get_players(current_user.id)
-  stronglines = db_get_stronglines(current_user.id)  
+  groups = db_get_groups(current_user.id, players)  
 
   if data != None:
     # only clear the shifts that aren't locked
     shifts = clear_shifts_not_locked(players, data)
 
-  get_shifts(shifts, players, stronglines)
+  get_shifts(shifts, players, groups)
   fairplay_validation(players, shifts)
   return players, shifts
 
@@ -114,9 +114,14 @@ def update(data):
 
   # load server side data from database
   shifts = db_get_shifts(current_user.id)
-  groups = db_get_groups(current_user.id)
   players = db_get_players(current_user.id)
 
+  clientSideGroups = data["groups"]
+  if len(clientSideGroups) > 0:
+    # roster page update
+    db_set_groups(current_user.id, clientSideGroups)
+  groups = db_get_groups(current_user.id, players)
+  
 
   reset_player_shifts(players)
   reset_player_locks(players)

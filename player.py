@@ -86,7 +86,7 @@ def get_sorted(players):
   for g in groups:
     random.shuffle(g)
     if prevshift.enabled:
-      log.debug("sorting with PREV SHIFT")
+      #log.debug("sorting with PREV SHIFT")
       g.sort(key=lambda x: x.prev)
 
   # now put them all into a flat array again
