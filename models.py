@@ -50,14 +50,18 @@ def db_remove_player_from_roster(user_id, player_name, player_number):
 # each group is a list of players
 def db_get_groups(user_id, players):
     groups = []
+    group_colours = ["#777777", "#999999", "#99CEAC", "#33B0AF", "#2E6C9D"]
 
     # query Player table and build groups
     for g in range(1,4):
         dbplayers = Player.query.filter_by(user_id=user_id, group=g).all()
         parr = []
+        # adjust group colours
+        colour = group_colours.pop()
         for p in dbplayers:
             pp = player.find(players, p.name)
             if pp != None:
+                pp.colour = colour
                 parr.append(pp)
         groups.append(parr)
 
