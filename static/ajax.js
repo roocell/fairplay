@@ -301,7 +301,8 @@ function getserverdata_roster()
     }).then(data => {
         // Handle the JSON data received from the server
         updateDomRoster(data);
-    }).catch(error => {
+        setupDraggablesAndDroppables();
+      }).catch(error => {
         // Handle any network or request-related errors here
         console.error(error);
     });

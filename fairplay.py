@@ -12,7 +12,7 @@ import double
 import models
 from sqlalchemy.orm.exc import NoResultFound
 from flask_login import current_user
-from models import db_get_shifts, db_get_players, db_get_stronglines, db_add_player_to_roster
+from models import db_get_shifts, db_get_players, db_get_stronglines, db_add_player_to_roster, db_remove_player_from_roster
 
 def fairplay_validation(players, shifts):
   if verify_shift_limits(players, shifts):
@@ -142,7 +142,6 @@ def update(data):
   # 2 cases
   # 1. removing roster player from mainpage
   # 2. adding new player from roster page
-  # 3. permenantly removing a player from the roster page
   for clientSidePlayer in rosterFromClientSide:
     p = player.find(serverSideRoster, clientSidePlayer["name"])
     if p == None:
@@ -157,6 +156,18 @@ def update(data):
 
     # update non-persistant copy
     players.append(p)
+
+  # check for deleted players
+  # only do this for roster page 
+  if len(shiftsFromClientSide) == 0:
+      # if there are no shifts, then it's the roster page.
+      # fine for now - but should be something more explicit.
+      for serverSidePlayer in serverSideRoster:
+        p = player.find(players, serverSidePlayer.name)
+        if p == None:
+          log.debug(f"removing player {serverSidePlayer.name} {serverSidePlayer.number}")
+          db_remove_player_from_roster(current_user.id, serverSidePlayer.name, serverSidePlayer.number)
+
 
   log.debug("New roster")
   player.dump(players)

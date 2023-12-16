@@ -302,7 +302,7 @@ function setupDraggablesAndDroppables()
 {
   const draggables = document.querySelectorAll(".player");
   const droppables = document.querySelectorAll(".shift");
-  
+ 
   draggables.forEach((player) => {
     player.style.backgroundColor = player.getAttribute('data-backgroundColor');
     if ( player.getAttribute('data-doubleshift') == 1)

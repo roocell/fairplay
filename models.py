@@ -41,6 +41,13 @@ def db_add_player_to_roster(user_id, player_name, player_number):
     db.session.add(player)
     db.session.commit()
 
+def db_remove_player_from_roster(user_id, player_name, player_number):
+    query = Player.query.filter_by(user_id=user_id, name=player_name, number=player_number)
+    player = query.one_or_none()
+    if player:
+        db.session.delete(player)
+        db.session.commit()
+
 def db_get_shifts(user_id):
     shifts = [[] for _ in range(8)] # 8 empty shifts
     return shifts;
