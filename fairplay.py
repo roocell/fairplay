@@ -23,8 +23,8 @@ def fairplay_validation(players, shifts):
 
 def run_fairplay_algo(data):
   # load server side data from database
-  shifts = db_get_shifts(current_user.id)
   players = db_get_players(current_user.id)
+  shifts = db_get_shifts(current_user.id, game_id=1, players=players)
   groups = db_get_groups(current_user.id, players)  
 
   if data != None:
@@ -113,8 +113,8 @@ def update(data):
   log.debug(data)
 
   # load server side data from database
-  shifts = db_get_shifts(current_user.id)
   players = db_get_players(current_user.id)
+  shifts = db_get_shifts(current_user.id, game_id=1, players=players)
 
   clientSideGroups = data["groups"]
   if len(clientSideGroups) > 0:
@@ -154,10 +154,11 @@ def update(data):
       # let's just assume this.
       # just update roster with new player
       log.debug(f"adding new player: {clientSidePlayer['name']}")
-      p = player.Player(clientSidePlayer["name"], clientSidePlayer["number"])
 
-      # update persistant copy
-      db_add_player_to_roster(current_user.id, p.name, p.number)
+      # update persistant copy (do this first so we know db id)
+      dbid = db_add_player_to_roster(current_user.id, p.name, p.number)
+      p = player.Player(clientSidePlayer["name"], clientSidePlayer["number"], dbid)
+
 
     # update non-persistant copy
     players.append(p)

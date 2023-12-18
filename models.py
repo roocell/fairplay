@@ -28,6 +28,24 @@ class Player(db.Model):
     group = db.Column(db.Integer)
     # ForeignKey establishes the relationship with the User model
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    shifts = db.relationship('PlayerShifts', backref='player', lazy=True)
+
+class Shift(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    game_id = db.Column(db.Integer, db.ForeignKey('game.id'), nullable=False)
+    players = db.relationship('PlayerShifts', backref='shift', lazy=True, cascade='all, delete-orphan')
+    # cacade makes sure that when a shift is deleted any connected entries in PlayerShifts also get removed
+
+# Many-to-Many Relationship Table: PlayerShifts
+class PlayerShifts(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    player_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False)
+    shift_id = db.Column(db.Integer, db.ForeignKey('shift.id'), nullable=False)
+
+class Game(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(128), nullable=False)
+
 
 login_manager = LoginManager()
 
@@ -40,9 +58,10 @@ def load_user(user_id):
         with open("test/15p_3sl_0pv/players.json", "r") as file:
             file_contents = file.read()
             players_json = commentjson.loads(file_contents)   
-        players = player.load(players_json, None)
-        for p in players:
-            db.session.add(Player(name=p.name, number=p.number, user_id=user_id))
+
+        for p in players_json:
+            db_player = db.session.add(Player(name=p["name"], number=p["number"], user_id=user_id))
+            db.session.flush() # to get player.id
         db.session.commit()
 
     return User.query.get(user_id)
@@ -51,6 +70,7 @@ def db_add_player_to_roster(user_id, player_name, player_number):
     player = Player(name=player_name, number=player_number, user_id=user_id)
     db.session.add(player)
     db.session.commit()
+    return player.id
 
 def db_remove_player_from_roster(user_id, player_name, player_number):
     query = Player.query.filter_by(user_id=user_id, name=player_name, number=player_number)
@@ -107,10 +127,6 @@ def db_set_groups(user_id, groups):
 
     db.session.commit() # only do one commit
 
-def db_get_shifts(user_id):
-    shifts = [[] for _ in range(8)] # 8 empty shifts
-    return shifts;
-
 def db_get_players(user_id):
     # read players from db
     query = Player.query.filter_by(user_id=user_id)
@@ -121,12 +137,71 @@ def db_get_players(user_id):
 
     players = []
     for dbp in dbplayers:
-        p = player.Player(dbp.name, dbp.number)
+        p = player.Player(dbp.name, dbp.number, dbp.id)
         players.append(p)
 
     return players;
 
+# gets the data to display on the webpage
 def db_get_data(user_id):
     players = db_get_players(user_id)
-    return (players, db_get_shifts(user_id), db_get_groups(user_id, players))
+    return (players, db_get_shifts(user_id, game_id=1,players=players), db_get_groups(user_id, players))
 
+# returns an array of shifts. each shift is an array of player.py:Player
+def db_get_shifts(user_id, game_id, players):
+    # default game is game_id=1
+
+    shiftsdb = (
+        db.session.query(Shift)
+        .filter(Shift.game_id == game_id)
+        .options(db.joinedload(Shift.players).joinedload(PlayerShifts.player))
+        .all()
+    )
+
+    shifts = [[] for _ in range(8)] # 8 empty shifts
+
+    if not shiftsdb:
+        print(f"No shifts found for Game ID: {game_id}")
+        return shifts;
+    
+    # Now 'shifts' contains all shifts associated with the specified game_id
+    for s, shift in enumerate(shiftsdb):
+        parr = []
+        print(f"Shift ID: {shift.id}, Game ID: {shift.game_id}")
+        print("Players:")
+        for player_shift in shift.players:
+            print(f"  - Player ID: {player_shift.player.id}, Name: {player_shift.player.name}")
+            p = player.find(players, player_shift.player.name)
+            if p != None:
+                parr.append(p)
+        shifts[s] = parr
+    return shifts
+
+# input: an array of shifts. each shift is an array of player.py:Player
+# assume the players in the shifts have player.id that is the database id for the Player table
+def db_set_shifts(user_id, game_id, shifts):
+    # add game
+    game = Game.query.filter_by(id=game_id).one_or_none()
+    if not game:
+        game = Game(name="default")
+        db.session.add(game)
+        db.session.flush() # to get game.id
+
+    # remove all shifts for this game_id
+    # TODO: maybe this is expensive on every fairplay.update() ?
+    # Delete associated PlayerShifts records (cascade option doesn't seem to work)
+    for shift_to_delete in Shift.query.filter_by(game_id=game_id).all():
+        for player_shift in shift_to_delete.players:
+            db.session.delete(player_shift)
+    Shift.query.filter_by(game_id=game_id).delete()
+
+    for shift in shifts:
+        log.debug(f"game.id {game.id}")
+        s = Shift(game_id=game.id)
+        db.session.add(s)
+        db.session.flush() # to get shift id
+        for p in shift:
+            ps = PlayerShifts(player_id=p.id, shift_id=s.id)
+            db.session.add(ps)
+
+    db.session.commit()

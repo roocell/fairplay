@@ -17,7 +17,7 @@ from models import db, login_manager, User
 from oauth import google_blueprint, facebook_blueprint
 from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
 from oauthlib.oauth2.rfc6749.errors import MismatchingStateError
-from models import db_get_data
+from models import db_get_data, db_set_shifts
 
 # fairtimesport.com - registered
 # fairplaytime.ca
@@ -91,6 +91,7 @@ def updatedata():
   # in index.html - and generate the shifts all in the
   # same JS code.
   fairplay.fairplay_validation(players, shifts)
+  db_set_shifts(current_user.id, game_id=1, shifts=shifts)
   return generate_json_data(players, shifts, groups)
 
 
@@ -117,6 +118,7 @@ def runfairplay():
   # will take player list and run alogorithm
   # returning shifts to web page
   players, shifts = fairplay.run_fairplay_algo(data)
+  db_set_shifts(current_user.id, game_id=1, shifts=shifts)
 
   return generate_json_data(players, shifts, [])
 

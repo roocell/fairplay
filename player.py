@@ -16,7 +16,7 @@ class PlayerEncoder(json.JSONEncoder):
 
 class Player:
 
-  def __init__(self, name, number):
+  def __init__(self, name, number, id):
     self.name = name
     self.number = number
     self.shifts = 0
@@ -25,6 +25,7 @@ class Player:
     self.doubleshifts = [0] * 8  # an array of bools for each shift
     self.violates = 0  # violates max shifts
     self.lockedtoshift = [0] * 8  # an array of bools for each shift
+    self.id = id # database id.
 
 # TODO: will have to fix the test scripts
 def load(players_json, prevshifts_json):
