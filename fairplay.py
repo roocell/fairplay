@@ -24,8 +24,18 @@ def fairplay_validation(players, shifts):
 def run_fairplay_algo(data):
   # load server side data from database
   players = db_get_players(current_user.id)
+
+  # trim roster
+  clientRoster = []
+  for clientRosterPlayer in data["roster"]:
+    p = player.find(players, clientRosterPlayer["name"])
+    if p != None:
+      clientRoster.append(p)
+  players = clientRoster
+
   shifts = db_get_shifts(current_user.id, game_id=1, players=players)
-  groups = db_get_groups(current_user.id, players)  
+  groups = db_get_groups(current_user.id, players)
+
 
   if data != None:
     # only clear the shifts that aren't locked
