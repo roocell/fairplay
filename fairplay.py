@@ -163,10 +163,10 @@ def update(data):
       # this could be an update from the roster page, adding new players
       # let's just assume this.
       # just update roster with new player
-      log.debug(f"adding new player: {clientSidePlayer['name']}")
+      log.debug(f"adding new player: {clientSidePlayer['number']} {clientSidePlayer['name']}")
 
       # update persistant copy (do this first so we know db id)
-      dbid = db_add_player_to_roster(current_user.id, p.name, p.number)
+      dbid = db_add_player_to_roster(current_user.id, clientSidePlayer['name'], clientSidePlayer["number"])
       p = player.Player(clientSidePlayer["name"], clientSidePlayer["number"], dbid)
 
 

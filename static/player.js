@@ -16,9 +16,9 @@ form.addEventListener("submit", (e) => {
   newPlayer.classList.add("player");
   newPlayer.setAttribute("draggable", "true");
   newPlayer.innerText = number + " " + name;
-  newPlayer.id = name;
-  newPlayer.dataset.number = number;
-  newPlayer.dataset.name = name;
+  newPlayer.id = 0; // unknown at this point (this is from db)
+  newPlayer.name = name
+  newPlayer.number = number
 
   newPlayer.addEventListener("dragstart", () => {
     newPlayer.classList.add("is-dragging");

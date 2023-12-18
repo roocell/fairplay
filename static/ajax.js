@@ -29,7 +29,9 @@ function getdomdata()
   var players = roster.querySelectorAll(".player");
   players.forEach((player) => {
     data.roster.push({
-      "name" : player.id,
+      "id" : player.id,
+      "name" : player.name,
+      "number" : player.number,
     })
   });
   
@@ -42,7 +44,7 @@ function getdomdata()
     var players = shift.querySelectorAll(".player");
         players.forEach(function(player) {
           parray.push({
-            "name" : player.id,
+            "name" : player.name,
             "lockedtoshift" : shift.classList.contains("locked-outline")
               })
         });
@@ -56,7 +58,7 @@ function getdomdata()
     var players = group.querySelectorAll(".player");
         players.forEach(function(player) {
           parray.push({
-            "name" : player.id,
+            "name" : player.name,
           })
         });
     data.groups.push(parray)
@@ -130,7 +132,9 @@ function updateDomRoster(data)
     playerp.classList.add("player");
     playerp.setAttribute("draggable", "true");
     playerp.setAttribute("isDragging", "false");
-    playerp.id = player.name;
+    playerp.id = player.id;
+    playerp.name = player.name;
+    playerp.number = player.number;
     playerp.innerHTML = player.number + " " + player.name + " " + player.shifts;
     playerp.setAttribute('data-backgroundColor', player.colour);
     rosterdiv.appendChild(playerp);
@@ -246,7 +250,9 @@ function updateDomShifts(mainpage, data)
       var playerp = document.createElement('p');
       playerp.className = "player";
       playerp.draggable = "true";
-      playerp.id = player.name;
+      playerp.id = player.id;
+      playerp.name = player.name;
+      playerp.number = player.number;
       if (isMobile)
       {
         // in case we want a different display for mobile
