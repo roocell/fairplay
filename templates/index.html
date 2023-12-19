@@ -13,8 +13,20 @@
   <form class="player-form" id="player-form">
 
   {% if current_user.is_authenticated %}
-    <button type="button" id=fairplay onclick="runfairplay()">Run Fairplay</button>
+    <button type="button" id=fairplay onclick="runfairplay();">Run Fairplay</button>
     <button type="button" onclick="window.location.href = '/roster'">Roster</button>
+    <div class="select-wrapper">
+      <select class="custom-select" id="games" name="games">
+        <!-- to be filled -->
+      </select>
+      <span class="select-arrow">&#9662;</span>
+    </div> 
+    <button type="button" onclick="addGameButtonClicked();">
+      <i class="fa fa-floppy-o" aria-hidden="true"></i>+
+    </button>
+    <button type="button" onclick="removeGameButtonClicked();">
+      <i class="fa fa-floppy-o" aria-hidden="true"></i>-
+    </button>
     <button type="button" onclick="window.location.href = '{{url_for('logout')}}'">
       Logout
       {% if current_user.service == "facebook" %}

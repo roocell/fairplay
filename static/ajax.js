@@ -4,6 +4,7 @@ const isMobile = /iPhone|iPad|iPod|Android|Windows Phone/.test(navigator.userAge
 function onLoadMain()
 {
   getserverdata();
+  getgames();
   setupDraggablesAndDroppables();
 
   if (isMobile)
@@ -308,6 +309,7 @@ function updateDom(mainpage, data)
   updateDomShifts(mainpage, data);
   setupDraggablesAndDroppables();
 }
+
 
 function getserverdata()
 {

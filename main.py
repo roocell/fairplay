@@ -17,7 +17,7 @@ from models import db, login_manager, User
 from oauth import google_blueprint, facebook_blueprint
 from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
 from oauthlib.oauth2.rfc6749.errors import MismatchingStateError
-from models import db_get_data, db_set_shifts
+from models import db_get_data, db_set_shifts, db_get_games
 
 # fairtimesport.com - registered
 # fairplaytime.ca
@@ -65,7 +65,7 @@ def generate_json_data(players, shifts, groups):
       "shifts": json.dumps(shifts, cls=player.PlayerEncoder),
       "groups": json.dumps(groups, cls=player.PlayerEncoder),
   }
-  log.debug(data)
+  #log.debug(data)
   return data
 
 
@@ -100,9 +100,21 @@ def getdata():
   if current_user.is_authenticated == False:
      return json.dumps({"status" : "not_logged_in"})
   players, shifts, groups = db_get_data(current_user.id)
-  log.debug(groups)
+  #log.debug(groups)
   return generate_json_data(players, shifts, groups)
 
+@app.route('/getgames', methods=['GET'])
+def getgames():
+  if current_user.is_authenticated == False:
+     return json.dumps({"status" : "not_logged_in"})
+  games = db_get_games(current_user.id)
+
+  data = {
+    "status" : "ok",
+    "games": json.dumps(games)
+  }
+  log.debug(data)
+  return data
 
 @app.route('/roster', methods=['GET'])
 def roster():

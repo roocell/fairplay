@@ -44,6 +44,7 @@ class PlayerShifts(db.Model):
 
 class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     name = db.Column(db.String(128), nullable=False)
 
 
@@ -161,16 +162,12 @@ def db_get_shifts(user_id, game_id, players):
     shifts = [[] for _ in range(8)] # 8 empty shifts
 
     if not shiftsdb:
-        print(f"No shifts found for Game ID: {game_id}")
         return shifts;
     
     # Now 'shifts' contains all shifts associated with the specified game_id
     for s, shift in enumerate(shiftsdb):
         parr = []
-        print(f"Shift ID: {shift.id}, Game ID: {shift.game_id}")
-        print("Players:")
         for player_shift in shift.players:
-            print(f"  - Player ID: {player_shift.player.id}, Name: {player_shift.player.name}")
             p = player.find(players, player_shift.player.name)
             if p != None:
                 parr.append(p)
@@ -183,7 +180,7 @@ def db_set_shifts(user_id, game_id, shifts):
     # add game
     game = Game.query.filter_by(id=game_id).one_or_none()
     if not game:
-        game = Game(name="default")
+        game = Game(name="default", user_id=user_id)
         db.session.add(game)
         db.session.flush() # to get game.id
 
@@ -205,3 +202,13 @@ def db_set_shifts(user_id, game_id, shifts):
             db.session.add(ps)
 
     db.session.commit()
+
+# returns a list of games as a dict
+def db_get_games(user_id):
+    games = []
+    for g in Game.query.filter_by(user_id=user_id).all():
+        game = {}
+        game['id'] = g.id
+        game['name'] = g.name
+        games.append(game)
+    return games
