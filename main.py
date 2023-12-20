@@ -55,6 +55,9 @@ from models import db_get_data, db_get_data_roster, db_set_shifts, db_get_games,
 # TODO: players removed from current roster do not persist
 # TODO: can i have a field overlay the dropdown to enter name for current game?
 # TODO: mobile (phone) should be a menu rather than buttons
+# TODO: hover over roster header should display what the fairplay is for the roster size.
+# TODO: could move python fairplay code to client side (better for scaling)
+# TODO: lockedtoshift (lts) corresponds to players - not the saved shifts.
 
 app = Flask(
     __name__,

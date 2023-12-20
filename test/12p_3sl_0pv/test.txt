@@ -1,0 +1,5 @@
+# title: 12p_3sl_0pv
+# scenario:
+#   12 players
+#   3 strong lines
+#   prevshift disabled

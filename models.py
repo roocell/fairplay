@@ -52,11 +52,22 @@ login_manager = LoginManager()
 
 @login_manager.user_loader
 def load_user(user_id):
-    # if there's no players for roocell - then populate from json
     query = Player.query.filter_by(user_id=user_id)
     dbplayers = query.all()
-    if len(dbplayers) == 0:
-        with open("test/15p_3sl_0pv/players.json", "r") as file:
+
+    user = User.query.get(user_id)
+    log.debug(user.email)
+
+    file = None
+    # if there's no players for roocell - then populate from json
+    if len(dbplayers) == 0 and user is not None:
+        if user.email is not None and "roocell" in user.email:
+            file = "test/15p_3sl_0pv/players.json"
+        if user.name is not None and ("emmanuel" in user.name.lower() or "mann" in user.name.lower()):
+            file = "test/12p_3sl_0pv/players.json"
+
+    if file is not None:
+        with open(file, "r") as file:
             file_contents = file.read()
             players_json = commentjson.loads(file_contents)   
 
@@ -64,8 +75,7 @@ def load_user(user_id):
             db_player = db.session.add(Player(name=p["name"], number=p["number"], user_id=user_id))
             db.session.flush() # to get player.id
         db.session.commit()
-
-    return User.query.get(user_id)
+    return user
 
 def db_add_player_to_roster(user_id, player_name, player_number):
     player = Player(name=player_name, number=player_number, user_id=user_id)

@@ -1,0 +1,19 @@
+# list of players
+# number, name
+
+[
+    [
+        {"number": 4, "name": "Logan Kujawski"},
+        {"number": 9, "name": "Rhys Carver"},
+        {"number": 16, "name": "Carter Caluori"},
+        {"number": 8, "name": "Grayson  Caluori"},
+        {"number": 14, "name": "Parker Gorsky"},
+        {"number": 15, "name": "Logan Le"},
+        {"number": 11, "name": "Nathanyel Moshonas"},
+        {"number": 10, "name": "Nikolas Brouillard"},
+        {"number": 13, "name": "Neal Xu"},
+        {"number": 7, "name": "James Koziel"},
+        {"number": 12, "name": "Krishan Kassil"},
+        {"number": 0, "name": "Ali Jaouhari"}
+    ]    
+]
