@@ -17,7 +17,7 @@ from models import db, login_manager, User
 from oauth import google_blueprint, facebook_blueprint
 from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
 from oauthlib.oauth2.rfc6749.errors import MismatchingStateError
-from models import db_get_data, db_set_shifts, db_get_games
+from models import db_get_data, db_get_data_roster, db_set_shifts, db_get_games, db_save_game
 
 # fairtimesport.com - registered
 # fairplaytime.ca
@@ -50,6 +50,7 @@ from models import db_get_data, db_set_shifts, db_get_games
 # TODO: notes section for printout
 # TODO: make another pass at the end to try and remove double shifts
 # TODO: might be useful to sort the roster by shifts so it's easy to see who's got the low numbers (while planning multiple games)
+# TODO: POST error should popup red banner with error (otherwise it's silent)
 
 app = Flask(
     __name__,
@@ -95,26 +96,20 @@ def updatedata():
   return generate_json_data(players, shifts, groups)
 
 
-@app.route('/getdata', methods=['GET'])
+@app.route('/getdata', methods=['POST'])
 def getdata():
   if current_user.is_authenticated == False:
      return json.dumps({"status" : "not_logged_in"})
-  players, shifts, groups = db_get_data(current_user.id)
-  #log.debug(groups)
+  data = request.get_json()
+  players, shifts, groups = db_get_data(current_user.id, data["game_id"])
   return generate_json_data(players, shifts, groups)
 
-@app.route('/getgames', methods=['GET'])
-def getgames():
+@app.route('/getdataroster', methods=['GET'])
+def getdataroster():
   if current_user.is_authenticated == False:
      return json.dumps({"status" : "not_logged_in"})
-  games = db_get_games(current_user.id)
-
-  data = {
-    "status" : "ok",
-    "games": json.dumps(games)
-  }
-  log.debug(data)
-  return data
+  players, groups = db_get_data_roster(current_user.id)
+  return generate_json_data(players, [], groups)
 
 @app.route('/roster', methods=['GET'])
 def roster():
@@ -133,6 +128,39 @@ def runfairplay():
   db_set_shifts(current_user.id, game_id=1, shifts=shifts)
 
   return generate_json_data(players, shifts, [])
+
+
+@app.route('/getgames', methods=['GET'])
+def getgames():
+  if current_user.is_authenticated == False:
+     return json.dumps({"status" : "not_logged_in"})
+  games = db_get_games(current_user.id)
+
+  data = {
+    "status" : "ok",
+    "games": json.dumps(games)
+  }
+  return data
+
+@app.route('/savegame', methods=['POST'])
+def savegame():
+  data = request.get_json()
+  games = db_save_game(current_user.id, data["name"])
+  data = {
+    "status" : "ok",
+    "games": json.dumps(games)
+  }
+  return data
+
+
+
+
+
+
+
+
+
+
 
 
 # social login for flask using flask-dance

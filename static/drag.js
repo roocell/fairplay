@@ -168,6 +168,8 @@ function playerDragEnd(player, e)
     // need to add the listeners manually on a cloned node
     // (if not specified instrinicly)
     addListeners(playerClone);
+    playerClone.name = player.name; // these attribs also dont clone
+    playerClone.number = player.number;
 
     var referenceElement = rosterdiv.children[player.dataset.rosterPosition];
     rosterdiv.insertBefore(playerClone, referenceElement);

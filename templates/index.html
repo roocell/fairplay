@@ -16,15 +16,15 @@
     <button type="button" id=fairplay onclick="runfairplay();">Run Fairplay</button>
     <button type="button" onclick="window.location.href = '/roster'">Roster</button>
     <div class="select-wrapper">
-      <select class="custom-select" id="games" name="games">
+      <select class="custom-select" id="games" name="games" onchange="handleGameChange(this);">
         <!-- to be filled -->
       </select>
       <span class="select-arrow">&#9662;</span>
     </div> 
-    <button type="button" onclick="addGameButtonClicked();">
+    <button type="button" onclick="saveGameButtonClicked();">
       <i class="fa fa-floppy-o" aria-hidden="true"></i>+
     </button>
-    <button type="button" onclick="removeGameButtonClicked();">
+    <button type="button" onclick="deleteGameButtonClicked();">
       <i class="fa fa-floppy-o" aria-hidden="true"></i>-
     </button>
     <button type="button" onclick="window.location.href = '{{url_for('logout')}}'">

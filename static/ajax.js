@@ -3,7 +3,7 @@ const isMobile = /iPhone|iPad|iPod|Android|Windows Phone/.test(navigator.userAge
 
 function onLoadMain()
 {
-  getserverdata();
+  getserverdata(1);
   getgames();
   setupDraggablesAndDroppables();
 
@@ -311,13 +311,16 @@ function updateDom(mainpage, data)
 }
 
 
-function getserverdata()
+function getserverdata(game_id)
 {
+  var data = {"game_id" : game_id};
+  var datastr = JSON.stringify(data);
   fetch('/getdata', {
-      method: 'GET',
+      method: 'POST',
       headers: {
           'Content-Type': 'application/json'
       },
+      body: datastr
     }).then(response => {
         if (response.ok) {
             // If the response status is in the 200-299 range, it means the request was successful.
@@ -342,7 +345,7 @@ function getserverdata()
 
 function getserverdata_roster()
 {
-  fetch('/getdata', {
+  fetch('/getdataroster', {
       method: 'GET',
       headers: {
           'Content-Type': 'application/json'

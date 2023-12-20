@@ -144,9 +144,13 @@ def db_get_players(user_id):
     return players;
 
 # gets the data to display on the webpage
-def db_get_data(user_id):
+def db_get_data(user_id, game_id):
     players = db_get_players(user_id)
-    return (players, db_get_shifts(user_id, game_id=1,players=players), db_get_groups(user_id, players))
+    return (players, db_get_shifts(user_id, game_id, players=players), db_get_groups(user_id, players))
+
+def db_get_data_roster(user_id):
+    players = db_get_players(user_id)
+    return (players, db_get_groups(user_id, players))
 
 # returns an array of shifts. each shift is an array of player.py:Player
 def db_get_shifts(user_id, game_id, players):
@@ -193,7 +197,6 @@ def db_set_shifts(user_id, game_id, shifts):
     Shift.query.filter_by(game_id=game_id).delete()
 
     for shift in shifts:
-        log.debug(f"game.id {game.id}")
         s = Shift(game_id=game.id)
         db.session.add(s)
         db.session.flush() # to get shift id
@@ -212,3 +215,25 @@ def db_get_games(user_id):
         game['name'] = g.name
         games.append(game)
     return games
+
+def db_save_game(user_id, gamename):
+    if gamename == "":
+        gamename = "game" +str(Game.query.filter_by(user_id=user_id).count()+1)
+
+    log.debug(f"saving game {gamename}")
+
+    g = Game(user_id=user_id, name=gamename)
+    db.session.add(g)
+    db.session.flush() # to get id
+
+    # we can cheat here because we've already saved the 
+    # default game to the db (for page refreshes)
+    # so all we really need to do is set the game_id on all the 
+    # shifts to this saved one
+    # just need to be sure to display the new game when saved   
+    target_game_id = 1 # default game
+    Shift.query.filter_by(game_id=1).update({'game_id': g.id})
+    db.session.commit()
+ 
+    # return all games
+    return db_get_games(user_id)
