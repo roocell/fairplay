@@ -49,7 +49,7 @@ function getdomdata()
         players.forEach(function(player) {
           parray.push({
             "name" : player.name,
-            "lockedtoshift" : shift.classList.contains("locked-outline")
+            "lts" : shift.classList.contains("locked-outline")
               })
         });
     data.shifts.push(parray)
@@ -266,14 +266,14 @@ function updateDomShifts(mainpage, data)
         playerp.innerHTML = player.number + " " + player.name + " " + player.shifts;
       }
       playerp.setAttribute('data-backgroundColor', player.colour);
-      playerp.setAttribute('data-doubleshift', player.doubleshifts[i-1]);
+      playerp.setAttribute('data-dbl', player.dbl[i-1]);
       playerp.setAttribute('data-violates', player.violates);
       
       shiftdiv.appendChild(playerp);
 
       // if any player was locked - lock the shift
       // doesn't kill us to do it multiple times
-      if (player.lockedtoshift[i-1] == 1)
+      if (player.lts[i-1] == 1)
       {
         // assume the log img is the first img in the shiftdiv
         lockimg = shiftdiv.getElementsByTagName("img")[0]

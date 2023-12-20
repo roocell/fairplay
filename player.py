@@ -22,9 +22,9 @@ class Player:
     self.shifts = 0
     self.prev = 0  # previous shifts
     self.colour = "white"
-    self.doubleshifts = [0] * 8  # an array of bools for each shift
+    self.dbl = [0] * 8  # an array of bools for each shift (doubleshift)
     self.violates = 0  # violates max shifts
-    self.lockedtoshift = [0] * 8  # an array of bools for each shift
+    self.lts = [0] * 8  # an array of bools for each shift (lockedtoshift)
     self.id = id # database id.
 
 # TODO: will have to fix the test scripts
@@ -52,7 +52,7 @@ def find(players, name):
 def dump(players):
   for p in players:
     log.debug(
-        f"{p.number} {p.name}: {p.shifts} {p.prev} {p.doubleshifts} {p.lockedtoshift}"
+        f"{p.number} {p.name}: {p.shifts} {p.prev} dbl {p.dbl} lts {p.lts}"
     )
 
 

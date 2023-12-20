@@ -307,11 +307,11 @@ function setupDraggablesAndDroppables()
  
   draggables.forEach((player) => {
     player.style.backgroundColor = player.getAttribute('data-backgroundColor');
-    if ( player.getAttribute('data-doubleshift') == 1)
+    if ( player.getAttribute('data-dbl') == 1)
     {
-      player.classList.add("is-doubleshift");
+      player.classList.add("is-dbl");
     } else {
-      player.classList.remove("is-doubleshift");
+      player.classList.remove("is-dbl");
     }
     if ( player.getAttribute('data-violates') == 1)
     {

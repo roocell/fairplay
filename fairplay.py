@@ -78,7 +78,7 @@ def reset_player_shifts(players):
 
 def reset_player_locks(players):
   for p in players:
-    p.lockedtoshift = [0] * 8
+    p.lts = [0] * 8
 
 
 def clear_shifts_not_locked(players, data):
@@ -101,11 +101,11 @@ def clear_shifts_not_locked(players, data):
         log.error(f"could not find player {pwname}")
       else:
         # only keep (and update) locked players
-        if pw["lockedtoshift"] == True:
+        if pw["lts"] == True:
           log.debug(f"locking {pp.name}")
           pp.shifts += 1
           # we may be locking the player to the shift - update the player array
-          pp.lockedtoshift[i] = int(pw["lockedtoshift"])
+          pp.lts[i] = int(pw["lts"])
           s.append(pp)
     shifts.append(s)
   return shifts
@@ -206,7 +206,7 @@ def update(data):
         # we may be locking the player to the shift
         # (but moved a player that triggered an update - for example)
         # - update the player array
-        pp.lockedtoshift[i] = int(pw["lockedtoshift"])
+        pp.lts[i] = int(pw["lts"])
         s.append(pp)
     shifts.append(s)
 

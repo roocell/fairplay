@@ -106,6 +106,7 @@ def getdata():
      return json.dumps({"status" : "not_logged_in"})
   data = request.get_json()
   players, shifts, groups = db_get_data(current_user.id, data["game_id"])
+  fairplay.fairplay_validation(players, shifts) # to mark dbl/violate
   return generate_json_data(players, shifts, groups)
 
 @app.route('/getdataroster', methods=['GET'])
