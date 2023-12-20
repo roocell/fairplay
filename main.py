@@ -17,7 +17,7 @@ from models import db, login_manager, User
 from oauth import google_blueprint, facebook_blueprint
 from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
 from oauthlib.oauth2.rfc6749.errors import MismatchingStateError
-from models import db_get_data, db_get_data_roster, db_set_shifts, db_get_games, db_save_game
+from models import db_get_data, db_get_data_roster, db_set_shifts, db_get_games, db_save_game, db_delete_game
 
 # fairtimesport.com - registered
 # fairplaytime.ca
@@ -51,6 +51,10 @@ from models import db_get_data, db_get_data_roster, db_set_shifts, db_get_games,
 # TODO: make another pass at the end to try and remove double shifts
 # TODO: might be useful to sort the roster by shifts so it's easy to see who's got the low numbers (while planning multiple games)
 # TODO: POST error should popup red banner with error (otherwise it's silent)
+# TODO: issue with old save games when roster has removed players
+# TODO: players removed from current roster do not persist
+# TODO: can i have a field overlay the dropdown to enter name for current game?
+# TODO: mobile (phone) should be a menu rather than buttons
 
 app = Flask(
     __name__,
@@ -92,7 +96,7 @@ def updatedata():
   # in index.html - and generate the shifts all in the
   # same JS code.
   fairplay.fairplay_validation(players, shifts)
-  db_set_shifts(current_user.id, game_id=1, shifts=shifts)
+  db_set_shifts(current_user.id, game_id=data["game_id"], shifts=shifts)
   return generate_json_data(players, shifts, groups)
 
 
@@ -152,7 +156,14 @@ def savegame():
   }
   return data
 
-
+@app.route('/deletegame', methods=['POST'])
+def deletegame():
+  data = request.get_json()
+  games = db_delete_game(current_user.id, data["game_id"])
+  data = {
+    "status" : "ok",
+  }
+  return data
 
 
 

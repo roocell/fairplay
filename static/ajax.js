@@ -3,7 +3,7 @@ const isMobile = /iPhone|iPad|iPod|Android|Windows Phone/.test(navigator.userAge
 
 function onLoadMain()
 {
-  getserverdata(1);
+  getserverdata(1); // game_id=1 is default
   getgames();
   setupDraggablesAndDroppables();
 
@@ -20,7 +20,10 @@ function onLoadRoster()
 
 function getdomdata()
 {
+  var selectElement = document.getElementById("games");
+
   var data = {
+    game_id : selectElement.value,
     shifts: [],
     groups: [],
     roster: []

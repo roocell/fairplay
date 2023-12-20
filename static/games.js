@@ -1,6 +1,5 @@
 function saveGameButtonClicked()
 {
-    console.log("addGameButtonClicked")
     var gamename = "";
 
     var data = { "name" : gamename };
@@ -39,9 +38,18 @@ function saveGameButtonClicked()
 }
 function deleteGameButtonClicked()
 {
-    console.log("removeGameButtonClicked")
+    var selectElement = document.getElementById("games");
+    var data = { "game_id" : selectElement.value };
+    var datastr = JSON.stringify(data);
+    // can't delete default(1)
+    if (selectElement.value == 1)
+    {
+        alert("Can't delete default(1) game");
+        return;
+    }
+
     fetch('/deletegame', {
-        method: 'GET',
+        method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
@@ -59,6 +67,9 @@ function deleteGameButtonClicked()
           if (data.status == "ok")
           {
               updateDomGames(data);
+              // reset to default
+              getserverdata(1); // game_id=1 is default
+              getgames();
           } else {
               console.log(data.games)
           }

@@ -237,3 +237,12 @@ def db_save_game(user_id, gamename):
  
     # return all games
     return db_get_games(user_id)
+
+def db_delete_game(user_id, game_id):
+    for shift_to_delete in Shift.query.filter_by(game_id=game_id).all():
+        for player_shift in shift_to_delete.players:
+            db.session.delete(player_shift)
+    Shift.query.filter_by(game_id=game_id).delete()
+
+    Game.query.filter_by(user_id=user_id, id=game_id).delete()
+    db.session.commit()
