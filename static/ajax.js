@@ -23,7 +23,7 @@ function getdomdata()
   var selectElement = document.getElementById("games");
 
   var data = {
-    game_id : selectElement.value,
+    game_id : (selectElement) ? selectElement.value : 0, // could be roster page
     shifts: [],
     groups: [],
     roster: []
