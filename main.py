@@ -22,8 +22,10 @@ from models import db_get_data, db_get_data_roster, db_set_shifts, db_get_games,
 # fairtimesport.com - registered
 # fairplaytime.ca
 # fairplayti.me
-# fairplay.app
+# fairplays.app
 # fairplay.coach
+# fairplayball.ca
+# lineupgen.com - registered
 
 # TODO: add flask_socketio if we need async updates to web (multi-user)
 # TODO: add flask_wtf if we need to add form validation
@@ -58,6 +60,7 @@ from models import db_get_data, db_get_data_roster, db_set_shifts, db_get_games,
 # TODO: hover over roster header should display what the fairplay is for the roster size.
 # TODO: could move python fairplay code to client side (better for scaling)
 # TODO: lockedtoshift (lts) corresponds to players - not the saved shifts.
+# TODO: need to logout and be able to choose a different google user.
 
 app = Flask(
     __name__,
@@ -98,8 +101,9 @@ def updatedata():
   # this is ok - because we can remove the django code
   # in index.html - and generate the shifts all in the
   # same JS code.
-  fairplay.fairplay_validation(players, shifts)
-  db_set_shifts(current_user.id, game_id=data["game_id"], shifts=shifts)
+  if game_id != 0: # will be 0 for roster page
+    fairplay.fairplay_validation(players, shifts)
+    db_set_shifts(current_user.id, game_id=data["game_id"], shifts=shifts)
   return generate_json_data(players, shifts, groups)
 
 
@@ -133,7 +137,7 @@ def runfairplay():
   # will take player list and run alogorithm
   # returning shifts to web page
   players, shifts = fairplay.run_fairplay_algo(data)
-  db_set_shifts(current_user.id, game_id=1, shifts=shifts)
+  db_set_shifts(current_user.id, game_id=data["game_id"], shifts=shifts)
 
   return generate_json_data(players, shifts, [])
 

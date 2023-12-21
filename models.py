@@ -56,14 +56,12 @@ def load_user(user_id):
     dbplayers = query.all()
 
     user = User.query.get(user_id)
-    log.debug(user.email)
-
     file = None
     # if there's no players for roocell - then populate from json
     if len(dbplayers) == 0 and user is not None:
         if user.email is not None and "roocell" in user.email:
             file = "test/15p_3sl_0pv/players.json"
-        if user.name is not None and ("emmanuel" in user.name.lower() or "mann" in user.name.lower()):
+        if user.email is not None and "kappuchino" in user.email.lower():
             file = "test/12p_3sl_0pv/players.json"
 
     if file is not None:
@@ -192,6 +190,8 @@ def db_get_shifts(user_id, game_id, players):
 # assume the players in the shifts have player.id that is the database id for the Player table
 def db_set_shifts(user_id, game_id, shifts):
     # add game
+    log.debug(f"db_set_shifts game_id {game_id}")
+
     game = Game.query.filter_by(id=game_id).one_or_none()
     if not game:
         game = Game(name="default", user_id=user_id)
