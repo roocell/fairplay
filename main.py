@@ -61,6 +61,7 @@ from models import db_get_data, db_get_data_roster, db_set_shifts, db_get_games,
 # TODO: could move python fairplay code to client side (better for scaling)
 # TODO: lockedtoshift (lts) corresponds to players - not the saved shifts.
 # TODO: need to logout and be able to choose a different google user.
+# TODO: when shift is created, sort by colour, then number. either that or preserve shift/group order when saved
 
 app = Flask(
     __name__,

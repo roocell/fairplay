@@ -59,10 +59,11 @@ def load_user(user_id):
     file = None
     # if there's no players for roocell - then populate from json
     if len(dbplayers) == 0 and user is not None:
-        if user.email is not None and "roocell" in user.email:
-            file = "test/15p_3sl_0pv/players.json"
         if user.email is not None and "kappuchino" in user.email.lower():
             file = "test/12p_3sl_0pv/players.json"
+        if user.email is not None and "roocell" in user.email:
+            file = "test/15p_3sl_0pv/players.json"
+
 
     if file is not None:
         with open(file, "r") as file:
@@ -70,6 +71,7 @@ def load_user(user_id):
             players_json = commentjson.loads(file_contents)   
 
         for p in players_json:
+            log.debug(p)
             db_player = db.session.add(Player(name=p["name"], number=p["number"], user_id=user_id))
             db.session.flush() # to get player.id
         db.session.commit()
