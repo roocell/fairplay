@@ -18,6 +18,7 @@ from oauth import google_blueprint, facebook_blueprint
 from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
 from oauthlib.oauth2.rfc6749.errors import MismatchingStateError
 from models import db_get_data, db_get_data_roster, db_set_shifts, db_get_games, db_save_game, db_delete_game
+from context_processors import git_commit_id
 
 # fairtimesport.com - registered
 # fairplaytime.ca
@@ -72,6 +73,9 @@ app = Flask(
     static_folder='static'  # Name of directory for static files
 )
 
+@app.context_processor
+def inject_git_commit_id():
+    return git_commit_id()
 
 def generate_json_data(players, shifts, groups):
   data = {
