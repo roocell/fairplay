@@ -62,6 +62,9 @@ from models import db_get_data, db_get_data_roster, db_set_shifts, db_get_games,
 # TODO: lockedtoshift (lts) corresponds to players - not the saved shifts.
 # TODO: need to logout and be able to choose a different google user.
 # TODO: when shift is created, sort by colour, then number. either that or preserve shift/group order when saved
+# TODO: create PlayerRosters table (similar to PlayerShifts) so we can have a roster per game
+# TODO: mobile UI should be swipe left/right for shifts/groups
+# TODO: extend player db object with non-db params and get rid of plyer.py (only one representation of a Player)
 
 app = Flask(
     __name__,
@@ -102,7 +105,7 @@ def updatedata():
   # this is ok - because we can remove the django code
   # in index.html - and generate the shifts all in the
   # same JS code.
-  if game_id != 0: # will be 0 for roster page
+  if data["game_id"] != 0: # will be 0 for roster page
     fairplay.fairplay_validation(players, shifts)
     db_set_shifts(current_user.id, game_id=data["game_id"], shifts=shifts)
   return generate_json_data(players, shifts, groups)

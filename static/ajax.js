@@ -16,6 +16,11 @@ function onLoadMain()
 function onLoadRoster()
 {
   getserverdata_roster();
+  // now that there's groups we need roster in a drawer here too
+  if (isMobile)
+  {
+    updateDomWithDrawer();
+  }
 }
 
 function getdomdata()
