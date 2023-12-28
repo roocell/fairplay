@@ -29,6 +29,7 @@ class Player(db.Model):
     # ForeignKey establishes the relationship with the User model
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     shifts = db.relationship('PlayerShifts', backref='player', lazy=True)
+    roster = db.relationship('PlayerRosters', backref='player', lazy=True)
 
 class Shift(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -41,6 +42,17 @@ class PlayerShifts(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     player_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False)
     shift_id = db.Column(db.Integer, db.ForeignKey('shift.id'), nullable=False)
+
+class Roster(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    game_id = db.Column(db.Integer, db.ForeignKey('game.id'), nullable=False)
+    players = db.relationship('PlayerRosters', backref='roster', lazy=True, cascade='all, delete-orphan')
+
+# Many-to-Many Relationship Table: PlayerShifts
+class PlayerRosters(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    player_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False)
+    roster_id = db.Column(db.Integer, db.ForeignKey('roster.id'), nullable=False)
 
 class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -156,14 +168,16 @@ def db_get_players(user_id):
 # gets the data to display on the webpage
 def db_get_data(user_id, game_id):
     players = db_get_players(user_id)
-    return (players, db_get_shifts(user_id, game_id, players=players), db_get_groups(user_id, players))
+    (shifts, roster) = db_get_game(user_id, game_id, players=players)
+    return (roster, shifts, db_get_groups(user_id, players))
 
 def db_get_data_roster(user_id):
     players = db_get_players(user_id)
     return (players, db_get_groups(user_id, players))
 
 # returns an array of shifts. each shift is an array of player.py:Player
-def db_get_shifts(user_id, game_id, players):
+# also return roster (roster is an array of player.py:Player)
+def db_get_game(user_id, game_id, players):
     # default game is game_id=1
 
     shiftsdb = (
@@ -176,23 +190,36 @@ def db_get_shifts(user_id, game_id, players):
     shifts = [[] for _ in range(8)] # 8 empty shifts
 
     if not shiftsdb:
-        return shifts;
+        return shifts, players; # players = full roster
     
     # Now 'shifts' contains all shifts associated with the specified game_id
     for s, shift in enumerate(shiftsdb):
         parr = []
-        for player_shift in shift.players:
-            p = player.find(players, player_shift.player.name)
+        for shift_player in shift.players:
+            p = player.find(players, shift_player.player.name)
             if p != None:
                 parr.append(p)
         shifts[s] = parr
-    return shifts
+
+    if game_id == 1:
+        # return full roster if default game
+        return (shifts, players)
+
+    # get game roster
+    rosterdb = Roster.query.filter_by(id=game_id).one()
+    roster = []
+    for roster_player in rosterdb.players:
+        p = player.find(players, roster_player.player.name)
+        if p != None:
+            roster.append(p)
+
+    return (shifts, roster)
 
 # input: an array of shifts. each shift is an array of player.py:Player
 # assume the players in the shifts have player.id that is the database id for the Player table
-def db_set_shifts(user_id, game_id, shifts):
+def db_set_game(user_id, game_id, shifts, roster):
     # add game
-    log.debug(f"db_set_shifts game_id {game_id}")
+    log.debug(f"db_set_game game_id {game_id}")
 
     game = Game.query.filter_by(id=game_id).one_or_none()
     if not game:
@@ -208,6 +235,15 @@ def db_set_shifts(user_id, game_id, shifts):
             db.session.delete(player_shift)
     Shift.query.filter_by(game_id=game_id).delete()
 
+    # delete existing roster for this game and we'll recreate it
+    for roster_to_delete in Roster.query.filter_by(game_id=game_id).all():
+        for player_roster in roster_to_delete.players:
+            db.session.delete(player_roster)
+    Roster.query.filter_by(game_id=game_id).delete()
+
+    # commit those deletes
+    db.session.commit()
+
     for shift in shifts:
         s = Shift(game_id=game.id)
         db.session.add(s)
@@ -215,6 +251,14 @@ def db_set_shifts(user_id, game_id, shifts):
         for p in shift:
             ps = PlayerShifts(player_id=p.id, shift_id=s.id)
             db.session.add(ps)
+
+    r = Roster(game_id=game.id)
+    db.session.add(r)
+    db.session.flush() # to get roster id
+
+    for p in roster:
+        pr = PlayerRosters(player_id=p.id, roster_id=r.id)
+        db.session.add(pr)
 
     db.session.commit()
 

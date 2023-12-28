@@ -17,7 +17,7 @@ from models import db, login_manager, User
 from oauth import google_blueprint, facebook_blueprint
 from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
 from oauthlib.oauth2.rfc6749.errors import MismatchingStateError
-from models import db_get_data, db_get_data_roster, db_set_shifts, db_get_games, db_save_game, db_delete_game
+from models import db_get_data, db_get_data_roster, db_set_game, db_get_games, db_save_game, db_delete_game
 from context_processors import git_commit_id
 
 # fairtimesport.com - registered
@@ -77,10 +77,10 @@ app = Flask(
 def inject_git_commit_id():
     return git_commit_id()
 
-def generate_json_data(players, shifts, groups):
+def generate_json_data(roster, shifts, groups):
   data = {
       "status" : "ok",
-      "players": json.dumps(players, cls=player.PlayerEncoder),
+      "players": json.dumps(roster, cls=player.PlayerEncoder),
       "shifts": json.dumps(shifts, cls=player.PlayerEncoder),
       "groups": json.dumps(groups, cls=player.PlayerEncoder),
   }
@@ -100,7 +100,7 @@ def updatedata():
   # take shifts from web and update our local copy
   data = request.get_json()
   #log.debug(data)
-  players, shifts, groups = fairplay.update(data)
+  roster, shifts, groups = fairplay.update(data) # uses data["roster"] inside
   # all the smarts are done in python code.
   # so when a player moves we need to run part of the
   # fairplay logic and feed back the information back to
@@ -110,9 +110,9 @@ def updatedata():
   # in index.html - and generate the shifts all in the
   # same JS code.
   if data["game_id"] != 0: # will be 0 for roster page
-    fairplay.fairplay_validation(players, shifts)
-    db_set_shifts(current_user.id, game_id=data["game_id"], shifts=shifts)
-  return generate_json_data(players, shifts, groups)
+    fairplay.fairplay_validation(roster, shifts)
+    db_set_game(current_user.id, game_id=data["game_id"], shifts=shifts, roster=roster)
+  return generate_json_data(roster, shifts, groups)
 
 
 @app.route('/getdata', methods=['POST'])
@@ -120,9 +120,9 @@ def getdata():
   if current_user.is_authenticated == False:
      return json.dumps({"status" : "not_logged_in"})
   data = request.get_json()
-  players, shifts, groups = db_get_data(current_user.id, data["game_id"])
-  fairplay.fairplay_validation(players, shifts) # to mark dbl/violate
-  return generate_json_data(players, shifts, groups)
+  roster, shifts, groups = db_get_data(current_user.id, data["game_id"])
+  fairplay.fairplay_validation(roster, shifts) # to mark dbl/violate
+  return generate_json_data(roster, shifts, groups)
 
 @app.route('/getdataroster', methods=['GET'])
 def getdataroster():
@@ -144,10 +144,10 @@ def runfairplay():
 
   # will take player list and run alogorithm
   # returning shifts to web page
-  players, shifts = fairplay.run_fairplay_algo(data)
-  db_set_shifts(current_user.id, game_id=data["game_id"], shifts=shifts)
+  roster, shifts = fairplay.run_fairplay_algo(data) # uses data["roster"] inside
+  db_set_game(current_user.id, game_id=data["game_id"], shifts=shifts, roster=roster)
 
-  return generate_json_data(players, shifts, [])
+  return generate_json_data(roster, shifts, [])
 
 
 @app.route('/getgames', methods=['GET'])

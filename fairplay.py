@@ -12,7 +12,7 @@ import double
 import models
 from sqlalchemy.orm.exc import NoResultFound
 from flask_login import current_user
-from models import db_get_shifts, db_get_players, db_get_groups, db_add_player_to_roster, db_remove_player_from_roster, db_set_groups, db_get_groups
+from models import db_get_game, db_get_players, db_get_groups, db_add_player_to_roster, db_remove_player_from_roster, db_set_groups, db_get_groups
 
 def fairplay_validation(players, shifts):
   if verify_shift_limits(players, shifts):
@@ -25,7 +25,7 @@ def run_fairplay_algo(data):
   # load server side data from database
   players = db_get_players(current_user.id)
 
-  # trim roster
+  # trim roster (TODO: probably redundant with game roster in db)
   clientRoster = []
   for clientRosterPlayer in data["roster"]:
     p = player.find(players, clientRosterPlayer["name"])
@@ -33,7 +33,7 @@ def run_fairplay_algo(data):
       clientRoster.append(p)
   players = clientRoster
 
-  shifts = db_get_shifts(current_user.id, game_id=1, players=players)
+  shifts, roster = db_get_game(current_user.id, game_id=1, players=players)
   groups = db_get_groups(current_user.id, players)
 
 
@@ -124,7 +124,7 @@ def update(data):
 
   # load server side data from database
   players = db_get_players(current_user.id)
-  shifts = db_get_shifts(current_user.id, game_id=1, players=players)
+  shifts, roster = db_get_game(current_user.id, game_id=1, players=players)
 
   clientSideGroups = data["groups"]
   if len(clientSideGroups) > 0:
