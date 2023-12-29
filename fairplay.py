@@ -44,6 +44,13 @@ def run_fairplay_algo(data):
   fairplay_validation(players, shifts)
   return players, shifts
 
+# fairplay algorithm updates player shift count (get_shifts())
+# but not when a game is loaded - this is to be used in the latter case.
+def fairplay_updateshiftcount(shifts, players):
+  reset_player_shifts(players)
+  for s in shifts:
+    for p in s:
+      p.shifts += 1
 
 def load_from_file(players_file, stronglines_file, prevshifts_file):
   with open(players_file, "r") as file:

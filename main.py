@@ -122,6 +122,7 @@ def getdata():
   data = request.get_json()
   roster, shifts, groups = db_get_data(current_user.id, data["game_id"])
   fairplay.fairplay_validation(roster, shifts) # to mark dbl/violate
+  fairplay.fairplay_updateshiftcount(shifts, roster)
   return generate_json_data(roster, shifts, groups)
 
 @app.route('/getdataroster', methods=['GET'])
