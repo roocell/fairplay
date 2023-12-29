@@ -66,6 +66,7 @@ from context_processors import git_commit_id
 # TODO: extend player db object with non-db params and get rid of plyer.py (only one representation of a Player)
 # TODO: need to get email permission from facebook login as well.
 # TODO: game_id=1 - this won't work for multiple users!
+# TODO: limit text field size - and optimze length of text in database to match.
 
 app = Flask(
     __name__,
