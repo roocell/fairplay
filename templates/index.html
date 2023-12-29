@@ -10,7 +10,7 @@
 <div class="drawer" id="drawer">
 </div>
 <div class="board">
-  <form class="player-form" id="player-form">
+  <form class="player-form" id="games-form">
 
   {% if current_user.is_authenticated %}
     <button type="button" id=fairplay onclick="runfairplay();">Run Fairplay</button>
@@ -19,7 +19,8 @@
       <select class="custom-select" id="games" name="games" onchange="handleGameChange(this);">
         <!-- to be filled -->
       </select>
-      <span class="select-arrow">&#9662;</span>
+      <input type="text" class="custom-select-input" id="gamesInput" name="gamesInput" value="default" oninput="handleGameNameChange(this)">      
+      <span class="select-arrow"">&#9662;</span>
     </div> 
     <button type="button" onclick="saveGameButtonClicked();">
       <i class="fa fa-floppy-o" aria-hidden="true"></i>+

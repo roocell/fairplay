@@ -17,7 +17,7 @@ from models import db, login_manager, User
 from oauth import google_blueprint, facebook_blueprint
 from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
 from oauthlib.oauth2.rfc6749.errors import MismatchingStateError
-from models import db_get_data, db_get_data_roster, db_set_game, db_get_games, db_save_game, db_delete_game
+from models import db_get_data, db_get_data_roster, db_set_game, db_get_games, db_save_game, db_delete_game, db_change_game
 from context_processors import git_commit_id
 
 # fairtimesport.com - registered
@@ -39,7 +39,6 @@ from context_processors import git_commit_id
 # TODO: separate page for roster creation but main page should be able to easily remove a player from the roster - a page refresh starts back from full roster. thish would mean the add player button and field would be on the roster creation page
 # TODO: change player cursor: not-allowed if double players
 # TODO: in python code change 'players' array to 'roster'
-# TODO: need UI to adjust stronglines
 # TODO: on mobile could display just number,initials/shifts on shift - to fit on iphone.
 # TODO: switch frontend from JS to react-native. this will allow it to run as an app on
 #       ios/andriod.
@@ -63,7 +62,6 @@ from context_processors import git_commit_id
 # TODO: lockedtoshift (lts) corresponds to players - not the saved shifts.
 # TODO: need to logout and be able to choose a different google user.
 # TODO: when shift is created, sort by colour, then number. either that or preserve shift/group order when saved
-# TODO: create PlayerRosters table (similar to PlayerShifts) so we can have a roster per game
 # TODO: mobile UI should be swipe left/right for shifts/groups
 # TODO: extend player db object with non-db params and get rid of plyer.py (only one representation of a Player)
 
@@ -181,8 +179,15 @@ def deletegame():
   }
   return data
 
-
-
+@app.route('/changegamename', methods=['POST'])
+def changegamename():
+  data = request.get_json()
+  log.debug(data)
+  games = db_change_game(current_user.id, data["game_id"], data["name"])
+  data = {
+    "status" : "ok",
+  }
+  return data
 
 
 

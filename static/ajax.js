@@ -3,8 +3,8 @@ const isMobile = /iPhone|iPad|iPod|Android|Windows Phone/.test(navigator.userAge
 
 function onLoadMain()
 {
-  getserverdata(1); // game_id=1 is default
-  getgames();
+  getserverdata(game_id=1);// game_id=1 is default  
+  getgames(0);
   setupDraggablesAndDroppables();
 
   if (isMobile)

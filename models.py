@@ -87,6 +87,14 @@ def load_user(user_id):
             db_player = db.session.add(Player(name=p["name"], number=p["number"], user_id=user_id))
             db.session.flush() # to get player.id
         db.session.commit()
+
+
+    # if there's no games for this user - create a default game
+    games = Game.query.filter_by(user_id=user_id).all()
+    if len(games) == 0:
+        g = Game(user_id=user_id, name="default")
+        db.session.add(g)
+        db.session.commit()
     return user
 
 def db_add_player_to_roster(user_id, player_name, player_number):
@@ -178,6 +186,7 @@ def db_get_data_roster(user_id):
 # returns an array of shifts. each shift is an array of player.py:Player
 # also return roster (roster is an array of player.py:Player)
 def db_get_game(user_id, game_id, players):
+    log.debug(f"db_get_game {game_id}")
     # default game is game_id=1
 
     shiftsdb = (
@@ -206,7 +215,7 @@ def db_get_game(user_id, game_id, players):
         return (shifts, players)
 
     # get game roster
-    rosterdb = Roster.query.filter_by(id=game_id).one()
+    rosterdb = Roster.query.filter_by(game_id=game_id).one()
     roster = []
     for roster_player in rosterdb.players:
         p = player.find(players, roster_player.player.name)
@@ -289,6 +298,8 @@ def db_save_game(user_id, gamename):
     # just need to be sure to display the new game when saved   
     target_game_id = 1 # default game
     Shift.query.filter_by(game_id=1).update({'game_id': g.id})
+    Roster.query.filter_by(game_id=1).update({'game_id': g.id})
+
     db.session.commit()
  
     # return all games
@@ -301,4 +312,9 @@ def db_delete_game(user_id, game_id):
     Shift.query.filter_by(game_id=game_id).delete()
 
     Game.query.filter_by(user_id=user_id, id=game_id).delete()
+    db.session.commit()
+
+def db_change_game(user_id, game_id, name):
+    log.debug(f"changing game {game_id} to {name}")
+    Game.query.filter_by(id=game_id).update({'name': name})
     db.session.commit()
