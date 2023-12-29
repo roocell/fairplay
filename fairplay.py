@@ -36,7 +36,6 @@ def run_fairplay_algo(data):
   shifts, roster = db_get_game(current_user.id, game_id=1, players=players)
   groups = db_get_groups(current_user.id, players)
 
-
   if data != None:
     # only clear the shifts that aren't locked
     shifts = clear_shifts_not_locked(players, data)
@@ -286,10 +285,11 @@ def get_strongline_shifts(shifts, players, stronglines, num_shifts=8):
       if p.shifts == (max_shifts - 1) and available_max_shift_spots < len(sl):
         add_shift = False
 
-      # if the shift isn't empty - don't insert the strongline
-      # this will also cover the case where a shift is locked
-      if len(shifts[i]) > 0:  # must be locked
-        add_shift = False
+
+    # if the shift isn't empty - don't insert the strongline
+    # this will also cover the case where a shift is locked
+    if len(shifts[i]) > 0:  # must be locked
+      add_shift = False
 
     if add_shift:
       # make a copy of the stronglong so we're not putting
@@ -300,7 +300,8 @@ def get_strongline_shifts(shifts, players, stronglines, num_shifts=8):
       shifts[i] = sl.copy()
       #log.debug(f"add Shift: {sl[0].name} {sl[0].shifts}")
     else:
-      log.debug(f"SHIFT LIMIT REACHED: {sl[0].name}")
+      if len(sl) > 0: # could be no stronglines defined
+        log.debug(f"SHIFT LIMIT REACHED: {sl[0].name}")
 
   # now the shifts are filled with stronglines
   # all shifts could be filled - but they could also be partly filled
@@ -337,7 +338,8 @@ def fill_shifts(players, shifts, stronglines):
 
   max_shifts = get_max_shifts(len(players))
 
-  for s in shifts:
+  for i, s in enumerate(shifts, start=1):
+  #for s in shifts:
     while len(s) < 5 and len(s) < len(next_players):  # keep going until the shift is full
       #log.debug("next_players")
       #player.dump(next_players)
@@ -356,7 +358,7 @@ def fill_shifts(players, shifts, stronglines):
       p_to_add.shifts += 1
       assert p_to_add.shifts <= max_shifts, f"ERROR: we've exceeded max shifts {max_shifts} for {len(players)}"
 
-      #log.debug(f"ADDING {p_to_add.name}")
+      #log.debug(f"ADDING {p_to_add.name} to shift {i}")
       s.append(p_to_add)
 
       # redo the player sorting so we're always picking a randomized player with

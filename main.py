@@ -64,6 +64,8 @@ from context_processors import git_commit_id
 # TODO: when shift is created, sort by colour, then number. either that or preserve shift/group order when saved
 # TODO: mobile UI should be swipe left/right for shifts/groups
 # TODO: extend player db object with non-db params and get rid of plyer.py (only one representation of a Player)
+# TODO: need to get email permission from facebook login as well.
+# TODO: game_id=1 - this won't work for multiple users!
 
 app = Flask(
     __name__,
