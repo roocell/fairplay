@@ -166,8 +166,10 @@ function updateDomRoster(data)
     playerp.id = player.id;
     playerp.name = player.name;
     playerp.number = player.number;
-    playerp.innerHTML = player.number + " " + player.name + " " + player.shifts;
+    playerp.innerHTML = player.name;
     playerp.setAttribute('data-backgroundColor', player.colour);
+    playerp.setAttribute('number-decoration', player.number);
+    playerp.setAttribute('shifts-decoration', player.shifts);
     rosterdiv.appendChild(playerp);
   });
  
@@ -288,14 +290,16 @@ function updateDomShifts(mainpage, data)
       {
         // in case we want a different display for mobile
         //playerp.innerHTML = player.number + " " + shortenName(player.name) + " " + player.shifts;
-        playerp.innerHTML = player.number + " " + player.name + " " + player.shifts;
+        playerp.innerHTML = player.name;
       } else {
-        playerp.innerHTML = player.number + " " + player.name + " " + player.shifts;
+        playerp.innerHTML = player.name;
       }
       playerp.setAttribute('data-backgroundColor', player.colour);
       playerp.setAttribute('data-dbl', player.dbl[i-1]);
       playerp.setAttribute('data-violates', player.violates);
-      
+      playerp.setAttribute('number-decoration', player.number);
+      playerp.setAttribute('shifts-decoration', player.shifts);
+
       shiftdiv.appendChild(playerp);
 
       // if any player was locked - lock the shift

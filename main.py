@@ -33,7 +33,6 @@ from context_processors import git_commit_id
 # TODO: add flask_mail if we need to send emails
 # TODO: generate notes under shifts with some explanations like
 #        - 4 players get 2 shifts when there are 15 players.
-# TODO: numbers and shifts as decorations rather than just text
 # TODO: change drag image when over roster and when hoving over shift with duplicate player
 # TODO: when dragging players around you could violate fairplay. we need to highlight this on the web somehow. red banner? roster could be over roster?
 # TODO: separate page for roster creation but main page should be able to easily remove a player from the roster - a page refresh starts back from full roster. thish would mean the add player button and field would be on the roster creation page
@@ -69,6 +68,7 @@ from context_processors import git_commit_id
 # TODO: block movement while app talks to server. moving players quickly (or clicking fiarplay repeatedly) can really cause some trouble.
 # TODO: consider using Celery for pipelining requests
 # TODO: option to enable prevshifts. considering all saved games when running fairplay on default.
+# TODO: multiple rosters under one user (if coach for more than one team)
 
 app = Flask(
     __name__,

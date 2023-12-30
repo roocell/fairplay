@@ -194,6 +194,7 @@
 }
 
 .player {
+  position:relative;
   background: white;
   color: black;
   box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.15);
@@ -207,6 +208,42 @@
 
   touch-action: none; /* Prevent default touch behavior */
   user-drag: none; /* Disable user-drag for older browsers */
+}
+
+.player::before {
+  content: attr(number-decoration);
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  width: 20px; /* Adjust the size of the circle */
+  height: 20px; /* Adjust the size of the circle */
+  background-color: #307FB8; /* Adjust the color of the circle */
+  border-radius: 50%;
+  border: 1px solid black; /* Black outline */
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.3); /* Shadow effect */
+  align-items: center;
+  justify-content: center;
+  color: white; /* Text color */
+  font-size: 10px;
+  display: flex;
+}
+
+.player::after {
+  content: attr(shifts-decoration);
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  width: 20px; /* Adjust the size of the circle */
+  height: 20px; /* Adjust the size of the circle */
+  background-color: white; /* Adjust the color of the circle */
+  border-radius: 50%;
+  border: 1px solid black; /* Black outline */
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.3); /* Shadow effect */
+  align-items: center;
+  justify-content: center;
+  color: black; /* Text color */
+  font-size: 10px;
+  display: flex;
 }
 
 .trashcan {
