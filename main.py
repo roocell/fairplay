@@ -69,6 +69,8 @@ from context_processors import git_commit_id
 # TODO: consider using Celery for pipelining requests
 # TODO: option to enable prevshifts. considering all saved games when running fairplay on default.
 # TODO: multiple rosters under one user (if coach for more than one team)
+# TODO: tooltip to explain what the player colours are for.
+# TODO: consider number decoration as background number inside player div rather than blue circle. circle seems cluttered.
 
 app = Flask(
     __name__,

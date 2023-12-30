@@ -351,3 +351,23 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* Footer styling */
+.footer {
+  background-color: #f4f4f4; /* Choose a neutral background color */
+  padding: 20px;
+  text-align: center;
+  font-size: 14px;
+  color: #888; /* Choose a subtle text color */
+  margin-top: 20px; /* Add some space between the content and the footer */
+}
+
+/* Optional: Add a border or box shadow for a subtle separation */
+.footer {
+  border-top: 1px solid #ddd;
+}
+
+/* Optional: Hover effect for links in the footer */
+.footer a:hover {
+  color: #555; /* Choose a slightly darker color on hover */
+}
