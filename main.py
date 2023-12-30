@@ -67,6 +67,8 @@ from context_processors import git_commit_id
 # TODO: need to get email permission from facebook login as well.
 # TODO: game_id=1 - this won't work for multiple users!
 # TODO: limit text field size - and optimze length of text in database to match.
+# TODO: block movement while app talks to server. moving players quickly (or clicking fiarplay repeatedly) can really cause some trouble.
+# TODO: consider using Celery for pipelining requests
 
 app = Flask(
     __name__,

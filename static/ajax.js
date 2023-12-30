@@ -23,6 +23,18 @@ function onLoadRoster()
   }
 }
 
+// TODO: this is brute force - need some better server side implementation
+// with Celery / evenlet
+function showLoadingOverlay() {
+  var loadingOverlay = document.getElementById('loading-overlay');
+  loadingOverlay.style.display = 'flex';
+}
+
+function hideLoadingOverlay() {
+  var loadingOverlay = document.getElementById('loading-overlay');
+  loadingOverlay.style.display = 'none';
+}
+
 function getdomdata()
 {
   var selectElement = document.getElementById("games");
@@ -85,6 +97,7 @@ function updatedata()
   console.log("datastr:" + datastr);
   //console.log(JSON.stringify(data));
   // Make a POST request to your Flask route with the JSON data
+  showLoadingOverlay();
   fetch('/updatedata', {
       method: 'POST',
       headers: {
@@ -102,9 +115,11 @@ function updatedata()
     }).then(data => {
         // Handle the JSON data received from the server
         updateDom(window.location.href.includes("roster") ? false : true, data);
+        hideLoadingOverlay();
     }).catch(error => {
         // Handle any network or request-related errors here
         console.error(error);
+        hideLoadingOverlay();
     });
 
 }
@@ -381,6 +396,7 @@ function runfairplay()
   var data = getdomdata();
   var datastr = JSON.stringify(data);
 
+  showLoadingOverlay();
   fetch('/runfairplay', {
       method: 'POST',
       headers: {
@@ -398,8 +414,10 @@ function runfairplay()
     }).then(data => {
         // Handle the JSON data received from the server
         updateDom(true, data);
+        hideLoadingOverlay();
     }).catch(error => {
         // Handle any network or request-related errors here
         console.error(error);
+        hideLoadingOverlay();
     });
 }
