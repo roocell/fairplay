@@ -187,7 +187,6 @@ def db_get_data_roster(user_id):
 # also return roster (roster is an array of player.py:Player)
 def db_get_game(user_id, game_id, players):
     log.debug(f"db_get_game {game_id}")
-    # default game is game_id=1
 
     shiftsdb = (
         db.session.query(Shift)
@@ -281,27 +280,57 @@ def db_get_games(user_id):
         games.append(game)
     return games
 
-def db_save_game(user_id, gamename):
-    if gamename == "":
-        gamename = "game" +str(Game.query.filter_by(user_id=user_id).count()+1)
+def db_save_game(user_id, game_id):
+    g = Game.query.filter_by(user_id=user_id, id=game_id).one()
 
-    log.debug(f"saving game {gamename}")
+    # move default to new game
+    if g.name == "default":
+        new_game_name = "game" +str(Game.query.filter_by(user_id=user_id).count()+1)
 
-    g = Game(user_id=user_id, name=gamename)
-    db.session.add(g)
-    db.session.flush() # to get id
+        new_g = Game(user_id=user_id, name=new_game_name)
+        db.session.add(new_g)
+        db.session.flush() # to get id
 
-    # we can cheat here because we've already saved the 
-    # default game to the db (for page refreshes)
-    # so all we really need to do is set the game_id on all the 
-    # shifts to this saved one
-    # just need to be sure to display the new game when saved   
-    target_game_id = 1 # default game
-    Shift.query.filter_by(game_id=1).update({'game_id': g.id})
-    Roster.query.filter_by(game_id=1).update({'game_id': g.id})
+        # we can cheat here because we've already saved the 
+        # default game to the db (for page refreshes)
+        # so all we really need to do is set the game_id on all the 
+        # shifts to this saved one
+        # just need to be sure to display the new game when saved   
+        Shift.query.filter_by(game_id=g.id).update({'game_id': new_g.id})
+        Roster.query.filter_by(game_id=g.id).update({'game_id': new_g.id})
 
-    db.session.commit()
- 
+        db.session.commit()
+    # duplicate an existing game
+    else:
+        new_game_name = g.name + "_" + str(Game.query.filter_by(user_id=user_id).count()+1)
+        new_g = Game(user_id=user_id, name=new_game_name)
+        db.session.add(new_g)
+        db.session.flush() # to get id
+
+        # create a new set of Shifts, Playershifts, Roster, PlayerRosters
+        shifts = Shift.query.filter_by(game_id=g.id).all()
+        for shift in shifts:
+            new_s = Shift(game_id=new_g.id)
+            db.session.add(new_s)
+            db.session.flush() # to get shift id
+            pshifts = PlayerShifts.query.filter_by(shift_id=shift.id)
+            for p in pshifts:
+                ps = PlayerShifts(player_id=p.player_id, shift_id=new_s.id)
+                db.session.add(ps)
+
+        roster = Roster.query.filter_by(game_id=g.id).one()
+        new_r = Roster(game_id=new_g.id)
+        db.session.add(new_r)
+        db.session.flush() # to get roster id
+
+        prosters = PlayerRosters.query.filter_by(roster_id=roster.id)
+        for p in prosters:
+            pr = PlayerRosters(player_id=p.player_id, roster_id=new_r.id)
+            db.session.add(pr)
+        db.session.commit()
+
+    log.debug(f"saved game {new_game_name}")
+
     # return all games
     return db_get_games(user_id)
 

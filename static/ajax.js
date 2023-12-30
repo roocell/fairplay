@@ -3,8 +3,15 @@ const isMobile = /iPhone|iPad|iPod|Android|Windows Phone/.test(navigator.userAge
 
 function onLoadMain()
 {
-  getserverdata(game_id=1);// game_id=1 is default  
-  getgames(0);
+  getgames(0)
+    .then(()=> {
+      getserverdata(game_id=document.getElementById("games").options[0].value); // default
+    })
+      .catch(error => {
+        // Handle errors here
+        console.error(error);
+    });
+
   setupDraggablesAndDroppables();
 
   if (isMobile)
@@ -334,7 +341,7 @@ function updateDom(mainpage, data)
 }
 
 
-function getserverdata(game_id)
+async function getserverdata(game_id)
 {
   var data = {"game_id" : game_id};
   var datastr = JSON.stringify(data);

@@ -1,7 +1,8 @@
 function saveGameButtonClicked()
 {
-    var gamename = "";
-    var data = { "name" : gamename };
+    var selectElement = document.getElementById("games");
+    var gameTextField = document.getElementById("gamesInput");
+    var data = { "game_id" : selectElement.value };
     var datastr = JSON.stringify(data);
   
     fetch('/savegame', {
@@ -68,8 +69,14 @@ function deleteGameButtonClicked()
           {
               updateDomGames(data);
               // reset to default
-              getserverdata(1); // game_id=1 is default
-              getgames(0);
+              getgames(0)
+              .then(()=> {
+                getserverdata(game_id=document.getElementById("games").options[0].value); // default
+              })
+                .catch(error => {
+                  // Handle errors here
+                  console.error(error);
+              });              
           } else {
               console.log(data.games)
           }
@@ -93,7 +100,7 @@ function updateDomGames(games)
 
 function getgames(selectIndex)
 {
-  fetch('/getgames', {
+  return fetch('/getgames', {
       method: 'GET',
       headers: {
           'Content-Type': 'application/json'
@@ -178,7 +185,7 @@ function handleGameChange(selectElement)
 
     // Disable the text input if the first option is selected, enable otherwise
     gameTextField.disabled = selectElement.selectedIndex === 0;
-
+    
 }
 
 function handleGameNameChange(inputElement)
@@ -197,6 +204,11 @@ form.addEventListener("submit", (e) => {
     console.log("game form submit")
 
     // TODO: sanitize text
+    if (gameTextField.value == "default")
+    {
+        alert("default is a reserved game name.");
+        return;
+    }
 
     changeGameName(selectElement.value, gameTextField.value);
 });
