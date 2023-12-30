@@ -133,7 +133,7 @@ function updatedata()
 
 // populates the DOM with the roster
 // used on both the main page and the roster page
-function updateDomRoster(data)
+function updateDomRoster(mainpage, data)
 {
   // update the roster in the DOM with the players again
   var rosterdiv = document.createElement('div');
@@ -169,7 +169,12 @@ function updateDomRoster(data)
     playerp.innerHTML = player.name;
     playerp.setAttribute('data-backgroundColor', player.colour);
     playerp.setAttribute('number-decoration', player.number);
-    playerp.setAttribute('shifts-decoration', player.shifts);
+    if (mainpage && player.shifts > 0)
+    {
+      playerp.setAttribute('shifts-decoration', player.shifts);
+    } else {
+      playerp.classList.add('hide-decoration');
+    }
     rosterdiv.appendChild(playerp);
   });
  
@@ -298,7 +303,12 @@ function updateDomShifts(mainpage, data)
       playerp.setAttribute('data-dbl', player.dbl[i-1]);
       playerp.setAttribute('data-violates', player.violates);
       playerp.setAttribute('number-decoration', player.number);
-      playerp.setAttribute('shifts-decoration', player.shifts);
+      if (mainpage)
+      {
+        playerp.setAttribute('shifts-decoration', player.shifts);
+      } else {
+        playerp.classList.add('hide-decoration');
+      }
 
       shiftdiv.appendChild(playerp);
 
@@ -339,7 +349,7 @@ function updateDom(mainpage, data)
   var lanes = document.getElementById("lanes");
   lanes.innerHTML = "";
   
-  updateDomRoster(data);
+  updateDomRoster(mainpage, data);
   updateDomShifts(mainpage, data);
   setupDraggablesAndDroppables();
 }

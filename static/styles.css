@@ -246,6 +246,10 @@
   display: flex;
 }
 
+.hide-decoration::after {
+  display: none; /* Hide the additional decoration */
+}
+
 .trashcan {
   background: white;
   color: black;
