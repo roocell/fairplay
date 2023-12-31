@@ -71,6 +71,7 @@ from context_processors import git_commit_id
 # TODO: multiple rosters under one user (if coach for more than one team)
 # TODO: tooltip to explain what the player colours are for.
 # TODO: consider number decoration as background number inside player div rather than blue circle. circle seems cluttered.
+# TODO: colour shift decoration if outlier. i.e. - if 13 players highlight the one with 4 shifts. if 15 players - hightlight the ones with 2 shifts.
 
 app = Flask(
     __name__,

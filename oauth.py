@@ -33,6 +33,7 @@ for service, service_data in services.items():
 facebook_blueprint = make_facebook_blueprint(
     client_id=services['facebook']['client'],
     client_secret=services['facebook']['secret'],
+    scope=["email"],
     storage=SQLAlchemyStorage(
         OAuth,
         db.session,
@@ -44,18 +45,19 @@ facebook_blueprint = make_facebook_blueprint(
 # email permission requires business verification
 @oauth_authorized.connect_via(facebook_blueprint)
 def facebook_logged_in(blueprint, token):
-    resp = facebook.get("/me")
+    resp = facebook.get("/me?fields=id,name,email")
     if resp.ok:
         username = resp.json()["id"]
         name = resp.json()["name"]
+        email = resp.json().get("email")
         service = "facebook"
-        log.debug(f"name {name}")
+        log.debug(f"name {name} email {email}")
 
         query = User.query.filter_by(username=username)
         try:
             user = query.one()
         except NoResultFound:
-            user = User(username=username, service=service, name=name)            
+            user = User(username=username, service=service, name=name, email=email)            
             db.session.add(user)
             db.session.commit()
         except Exception as e:
