@@ -208,25 +208,22 @@
 
   touch-action: none; /* Prevent default touch behavior */
   user-drag: none; /* Disable user-drag for older browsers */
+
+  overflow: hidden; /* so the number gets clips */
 }
 
 .player::before {
   content: attr(number-decoration);
   position: absolute;
-  top: -5px;
-  left: -5px;
-  width: 20px; /* Adjust the size of the circle */
-  height: 20px; /* Adjust the size of the circle */
-  background-color: #307FB8; /* Adjust the color of the circle */
-  border-radius: 50%;
-  border: 1px solid black; /* Black outline */
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.3); /* Shadow effect */
-  align-items: center;
-  justify-content: center;
-  color: white; /* Text color */
-  font-size: 10px;
-  display: flex;
+  top: 50%;
+  left: 0%;
+  transform: translateY(-50%);
+  color: rgba(128, 128, 128, 0.08); /* Adjust the color and opacity of the text */
+  font-weight: 900;
+  font-size: 80px; /* Adjust the font size of the faint text */
+  z-index: 0;
 }
+
 
 .player::after {
   content: attr(shifts-decoration);
@@ -237,7 +234,7 @@
   height: 20px; /* Adjust the size of the circle */
   background-color: white; /* Adjust the color of the circle */
   border-radius: 50%;
-  border: 1px solid black; /* Black outline */
+  border: 0px solid black; /* Black outline */
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.3); /* Shadow effect */
   align-items: center;
   justify-content: center;
