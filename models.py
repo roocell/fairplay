@@ -339,8 +339,8 @@ def db_delete_game(user_id, game_id):
         for player_shift in shift_to_delete.players:
             db.session.delete(player_shift)
     Shift.query.filter_by(game_id=game_id).delete()
-
     Game.query.filter_by(user_id=user_id, id=game_id).delete()
+    Roster.query.filter_by(game_id=game_id).delete()
     db.session.commit()
 
 def db_change_game(user_id, game_id, name):
