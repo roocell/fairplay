@@ -28,7 +28,11 @@ function saveGameButtonClicked()
             updateDomGames(games);
             var selectElement = document.getElementById("games");
             selectElement.value = games[games.length-1].id;
-            getgames(selectElement.value-1);
+
+            // update text field
+            var gameTextField = document.getElementById("gamesInput");
+            var selectedOption = selectElement.options[selectElement.selectedIndex];
+            gameTextField.value = selectedOption.text;
           } else {
               console.log(data.games)
           }

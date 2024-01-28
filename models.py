@@ -48,7 +48,7 @@ class Roster(db.Model):
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'), nullable=False)
     players = db.relationship('PlayerRosters', backref='roster', lazy=True, cascade='all, delete-orphan')
 
-# Many-to-Many Relationship Table: PlayerShifts
+# Many-to-Many Relationship Table: PlayerRosters
 class PlayerRosters(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     player_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False)
@@ -227,7 +227,7 @@ def db_get_game(user_id, game_id, players):
 # assume the players in the shifts have player.id that is the database id for the Player table
 def db_set_game(user_id, game_id, shifts, roster):
     # add game
-    log.debug(f"db_set_game game_id {game_id}")
+    log.debug(f"db_set_game user_id={user_id} game_id={game_id}")
 
     game = Game.query.filter_by(id=game_id).one_or_none()
     if not game:
@@ -338,8 +338,14 @@ def db_delete_game(user_id, game_id):
     for shift_to_delete in Shift.query.filter_by(game_id=game_id).all():
         for player_shift in shift_to_delete.players:
             db.session.delete(player_shift)
+
     Shift.query.filter_by(game_id=game_id).delete()
     Game.query.filter_by(user_id=user_id, id=game_id).delete()
+
+    roster = Roster.query.filter_by(game_id=game_id).one()
+    prosters = PlayerRosters.query.filter_by(roster_id=roster.id).all()
+    for pr in prosters:
+        PlayerRosters.query.filter_by(roster_id=pr.id).delete()
     Roster.query.filter_by(game_id=game_id).delete()
     db.session.commit()
 
