@@ -1,5 +1,7 @@
 function saveGameButtonClicked()
 {
+    showLoadingOverlay();
+
     var selectElement = document.getElementById("games");
     var gameTextField = document.getElementById("gamesInput");
     var data = { "game_id" : selectElement.value };
@@ -20,6 +22,7 @@ function saveGameButtonClicked()
               throw new Error('Request failed with status: ' + response.status);
           }
       }).then(data => {
+          hideLoadingOverlay();
           // Handle the JSON data received from the server
           if (data.status == "ok")
           {
@@ -43,6 +46,8 @@ function saveGameButtonClicked()
 }
 function deleteGameButtonClicked()
 {
+    showLoadingOverlay();
+
     var selectElement = document.getElementById("games");
     var data = { "game_id" : selectElement.value };
     var datastr = JSON.stringify(data);
@@ -68,6 +73,7 @@ function deleteGameButtonClicked()
               throw new Error('Request failed with status: ' + response.status);
           }
       }).then(data => {
+          hideLoadingOverlay();
           // Handle the JSON data received from the server
           if (data.status == "ok")
           {
