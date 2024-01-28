@@ -40,7 +40,8 @@ function saveGameButtonClicked()
               console.log(data.games)
           }
       }).catch(error => {
-          // Handle any network or request-related errors here
+        hideLoadingOverlay();
+        // Handle any network or request-related errors here
           console.error(error);
       });
 }
@@ -55,6 +56,7 @@ function deleteGameButtonClicked()
     if (selectElement.value == 1)
     {
         alert("Can't delete default(1) game");
+        hideLoadingOverlay();
         return;
     }
 
@@ -91,7 +93,8 @@ function deleteGameButtonClicked()
               console.log(data.games)
           }
       }).catch(error => {
-          // Handle any network or request-related errors here
+        hideLoadingOverlay();
+        // Handle any network or request-related errors here
           console.error(error);
       });
 }
