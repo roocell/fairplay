@@ -19,6 +19,9 @@ from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
 from oauthlib.oauth2.rfc6749.errors import MismatchingStateError
 from models import db_get_data, db_get_data_roster, db_set_game, db_get_games, db_save_game, db_delete_game, db_change_game
 from context_processors import git_commit_id
+import logging
+
+
 
 # fairtimesport.com - registered
 # fairplaytime.ca
@@ -79,6 +82,13 @@ app = Flask(
     static_folder='static'  # Name of directory for static files
 )
 
+
+handler = logging.FileHandler('your_log_file.log')  # Specify the log file
+handler.setLevel(logging.INFO)  # Set the logging level
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+app.logger.addHandler(handler)
+
 @app.context_processor
 def inject_git_commit_id():
     return git_commit_id()
@@ -97,6 +107,7 @@ def generate_json_data(roster, shifts, groups):
 @app.route('/')
 def home_page():
   # data will be loaded with onload and the getdata route
+  app.logger.info(f"Incoming request from IP address: {request.remote_addr}")
   return render_template('index.html')
 
 # this route is for any form submission,
@@ -138,9 +149,9 @@ def getdataroster():
   players, groups = db_get_data_roster(current_user.id)
   return generate_json_data(players, [], groups)
 
-@app.route('/roster', methods=['GET'])
+@app.route('/settings', methods=['GET'])
 def roster():
-  return render_template('roster.html')
+  return render_template('settings.html')
 
 
 @app.route('/runfairplay', methods=['POST'])
@@ -182,6 +193,7 @@ def savegame():
 @app.route('/deletegame', methods=['POST'])
 def deletegame():
   data = request.get_json()
+  log.debug(f"deleting game {data['game_id']}")
   games = db_delete_game(current_user.id, data["game_id"])
   data = {
     "status" : "ok",
@@ -226,6 +238,7 @@ def google_login():
   if not google.authorized:
     session.clear() # in case there was a bad session in the browser cache
     redirect_url = url_for("google.authorized")
+    log.debug(redirect_url)
     return redirect(redirect_url)
   # try:
   #   resp = google_blueprint.session.get("/oauth2/v1/userinfo")
@@ -240,6 +253,7 @@ def facebook_login():
   if not facebook.authorized:
     session.clear() # in case there was a bad session in the browser cache
     redirect_url = url_for("facebook.authorized")
+    log.debug(redirect_url)
     return redirect(redirect_url)
     # try:
     #   return redirect(redirect_url)
@@ -260,6 +274,7 @@ def logout():
 # open port 80 for roocell.com
 # run
 # sudo certbot certonly --standalone -d roocell.com -d www.roocell.com
+# this starts a webserver on port 80 to authorize with the server.
 # this generates certs locally with an expiry date (put these in the app.run() below)
 # have to rerun to renew
 
@@ -270,13 +285,14 @@ def before_request():
         url = request.url.replace('http://', 'https://', 1)
         return redirect(url, code=301)
 
-myport = 4466
+myport = 4444
 if len(sys.argv) == 2:
   myport = sys.argv[1]
 
 if __name__ == '__main__':
   # replit needs to use 0.0.0.0
-  app.run(host='0.0.0.0', port=myport, debug=True,
-          ssl_context=("/etc/letsencrypt/live/roocell.com/fullchain.pem", 
-                       "/etc/letsencrypt/live/roocell.com/privkey.pem")
+  app.run(host='0.0.0.0', port=myport, debug=False,
+          ssl_context=("/etc/letsencrypt/live/lineupgen.com/fullchain.pem", 
+                       "/etc/letsencrypt/live/lineupgen.com/privkey.pem")
           )
+  # app.run(host='0.0.0.0', port=myport, debug=False)

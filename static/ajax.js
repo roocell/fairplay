@@ -357,6 +357,7 @@ function updateDom(mainpage, data)
 
 async function getserverdata(game_id)
 {
+  showLoadingOverlay();
   var data = {"game_id" : game_id};
   var datastr = JSON.stringify(data);
   fetch('/getdata', {
@@ -381,9 +382,11 @@ async function getserverdata(game_id)
         } else {
           console.log(data)
         }
+        hideLoadingOverlay();
     }).catch(error => {
         // Handle any network or request-related errors here
         console.error(error);
+        hideLoadingOverlay();
     });
 }
 

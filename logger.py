@@ -8,6 +8,6 @@ ch.setLevel(logging.DEBUG)
 #formatter = logging.Formatter(
 #    '%(asctime)s - %(filename)s:%(lineno)d - %(levelname)s - %(message)s')
 formatter = logging.Formatter(
-    '%(filename)s:%(lineno)d - %(levelname)s - %(message)s')
+    '%(asctime)s %(filename)s:%(lineno)d - %(levelname)s - %(message)s')
 ch.setFormatter(formatter)
 log.addHandler(ch)

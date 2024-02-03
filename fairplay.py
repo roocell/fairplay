@@ -150,7 +150,7 @@ def update(data):
   # how to also calculate player things that the fairplay algorithm figures out
   # like shifts
 
-  player.dump(serverSideRoster)
+  #player.dump(serverSideRoster)
 
   rosterFromClientSide = data["roster"]
   shiftsFromClientSide = data["shifts"]
@@ -191,13 +191,13 @@ def update(data):
           db_remove_player_from_roster(current_user.id, serverSidePlayer.name, serverSidePlayer.number)
 
 
-  log.debug("New roster")
-  player.dump(players)
+  #log.debug("New roster")
+  #player.dump(players)
 
   # fixup stronglines (players could be removed from roster)
   stronglines = groups
   stronglines = strong.reload(players, stronglines)
-  strong.dump(stronglines)
+  #strong.dump(stronglines)
 
   for i, webshift in enumerate(shiftsFromClientSide):
     s = []
@@ -217,7 +217,7 @@ def update(data):
     shifts.append(s)
 
   double.check_consecutive(players, shifts)
-  print_shifts(shifts)
+  #print_shifts(shifts)
   return (players, shifts, groups)
 
 
