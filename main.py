@@ -18,6 +18,7 @@ from oauth import google_blueprint, facebook_blueprint
 from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
 from oauthlib.oauth2.rfc6749.errors import MismatchingStateError
 from models import db_get_data, db_get_data_roster, db_set_game, db_get_games, db_save_game, db_delete_game, db_change_game
+from models import db_get_shared_users, db_add_share_user, db_remove_share_user
 from context_processors import git_commit_id
 import logging
 
@@ -55,9 +56,6 @@ import logging
 # TODO: make another pass at the end to try and remove double shifts
 # TODO: might be useful to sort the roster by shifts so it's easy to see who's got the low numbers (while planning multiple games)
 # TODO: POST error should popup red banner with error (otherwise it's silent)
-# TODO: issue with old save games when roster has removed players
-# TODO: players removed from current roster do not persist
-# TODO: can i have a field overlay the dropdown to enter name for current game?
 # TODO: mobile (phone) should be a menu rather than buttons
 # TODO: hover over roster header should display what the fairplay is for the roster size.
 # TODO: could move python fairplay code to client side (better for scaling)
@@ -65,16 +63,17 @@ import logging
 # TODO: need to logout and be able to choose a different google user.
 # TODO: when shift is created, sort by colour, then number. either that or preserve shift/group order when saved
 # TODO: mobile UI should be swipe left/right for shifts/groups
-# TODO: extend player db object with non-db params and get rid of plyer.py (only one representation of a Player)
+# TODO: extend player db object with non-db params and get rid of player.py (only one representation of a Player)
 # TODO: need to get email permission from facebook login as well.
 # TODO: limit text field size - and optimze length of text in database to match.
-# TODO: block movement while app talks to server. moving players quickly (or clicking fiarplay repeatedly) can really cause some trouble.
 # TODO: consider using Celery for pipelining requests
 # TODO: option to enable prevshifts. considering all saved games when running fairplay on default.
 # TODO: multiple rosters under one user (if coach for more than one team)
 # TODO: tooltip to explain what the player colours are for.
-# TODO: consider number decoration as background number inside player div rather than blue circle. circle seems cluttered.
 # TODO: colour shift decoration if outlier. i.e. - if 13 players highlight the one with 4 shifts. if 15 players - hightlight the ones with 2 shifts.
+# TODO: use pusher.com for concurrent editing with multiple users
+# TODO: consider supabase.com for db hosting and social authentiation
+# TODO: limit login to one profile per email. (so can't go google and facebook with same email)
 
 app = Flask(
     __name__,
@@ -190,6 +189,31 @@ def savegame():
   }
   return data
 
+@app.route('/updatesettings', methods=['POST'])
+def updatesettings():
+  data = request.get_json()
+  if db_add_share_user(current_user.id, data["share_email"]) == False:
+    data = {
+      "status" : "failed",
+      "reason" : "could not find email"
+    }
+  else :
+    shared_users = db_get_shared_users(current_user.id)
+    data = {
+      "status" : "ok",
+      "shared_users": json.dumps(shared_users)
+    }
+  return data
+
+@app.route('/getsettings', methods=['POST'])
+def getsettings():
+  shared_users = db_get_shared_users(current_user.id)
+  data = {
+    "status" : "ok",
+    "shared_users": json.dumps(shared_users)
+  }
+  return data
+
 @app.route('/deletegame', methods=['POST'])
 def deletegame():
   data = request.get_json()
@@ -285,14 +309,14 @@ def before_request():
         url = request.url.replace('http://', 'https://', 1)
         return redirect(url, code=301)
 
-myport = 4444
+myport = 4466
 if len(sys.argv) == 2:
   myport = sys.argv[1]
 
 if __name__ == '__main__':
   # replit needs to use 0.0.0.0
-  app.run(host='0.0.0.0', port=myport, debug=False,
-          ssl_context=("/etc/letsencrypt/live/lineupgen.com/fullchain.pem", 
-                       "/etc/letsencrypt/live/lineupgen.com/privkey.pem")
+    app.run(host='0.0.0.0', port=myport, debug=True,
+          ssl_context=("/etc/letsencrypt/live/roocell.com/fullchain.pem", 
+                       "/etc/letsencrypt/live/roocell.com/privkey.pem")
           )
   # app.run(host='0.0.0.0', port=myport, debug=False)

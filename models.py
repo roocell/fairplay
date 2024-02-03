@@ -54,10 +54,16 @@ class PlayerRosters(db.Model):
     player_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False)
     roster_id = db.Column(db.Integer, db.ForeignKey('roster.id'), nullable=False)
 
+class GameUsers(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    game_id = db.Column(db.Integer, db.ForeignKey('game.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
 class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     name = db.Column(db.String(128), nullable=False)
+    shared_users = db.relationship('GameUsers', backref='game', lazy=True, cascade='all, delete-orphan')
 
 
 login_manager = LoginManager()
@@ -353,3 +359,45 @@ def db_change_game(user_id, game_id, name):
     log.debug(f"changing game {game_id} to {name}")
     Game.query.filter_by(id=game_id).update({'name': name})
     db.session.commit()
+
+def db_get_shared_users(user_id):
+    # the database is geared to sharing individual games
+    # but (for now) we're sharing all games
+    # for now assume all games are shared
+    # so just 
+    # get a game_id from a game owned by current user
+    # get all GameUsers entries for that game_id
+    # those are the shared users ids
+    # load up shared users emails to return
+    unique_emails = set()
+    shared_users = []
+    game = Game.query.filter_by(user_id=user_id).first()
+    for gu in GameUsers.query.filter_by(game_id=game.id).all():
+        shared_user = {}
+        user = User.query.filter_by(id=gu.user_id).one()
+        if not user:
+            log.error(f"couldn't find user_id {user_id}")
+            continue
+        if user.email not in unique_emails:
+            shared_user['id'] = user.id
+            shared_user['email'] = user.email
+            log.debug(shared_user)
+            shared_users.append(shared_user)
+            unique_emails.add(user.email)
+    return shared_users
+
+def db_add_share_user(user_id, email):
+    log.debug(f"db_add_share_user email {email}")
+    share_user = User.query.filter_by(email=email).one()
+    if not share_user:
+        log.debug(f"could not find email {email}")
+        return False
+    # share all games with user
+    for g in Game.query.filter_by(user_id=user_id).all():
+        newentry = GameUsers(game_id=g.id, user_id=share_user.id)
+        db.session.add(newentry)
+    db.session.commit()
+    return True
+
+def db_remove_share_user(user_id, email):
+    return True

@@ -6,7 +6,7 @@
     onLoadRoster();
   });
 </script>
-<script src="/static/player.js" defer></script>
+<script src="/static/settings.js" defer></script>
 <div class="drawer" id="drawer">
 </div>
 <div class="board">
@@ -14,12 +14,25 @@
     <button type="button" onclick="window.location.href = '/'">Home</button>
     <input type="text" class="player-input" style="width: 50px;" placeholder="#..." id="player-number" />
     <input type="text" class="player-input" placeholder="New Player..." id="player-name" />
-    <button type="submit">+</button>
+    <button type="button" onclick="addPlayer()">+</button>
   </form>
 
   <div class="lanes" id=lanes>
     <!-- the roster and shifts will be generated here -->
   </div> <!-- end of lanescon -->
+
+  <div>
+    <!-- some settings -->
+    <form class="player-form" id="settings-form">
+      <input type="text" class="player-input" placeholder="share with <email>" id="share-email" />
+      <button type="button" onclick="addShareUser()">+</button>
+    </form>
+    <div id="shared-user-list">
+      
+    </div>
+
+  </div>
+
 </div>
 
 {% endblock content %}

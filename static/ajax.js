@@ -28,6 +28,7 @@ function onLoadRoster()
   {
     updateDomWithDrawer();
   }
+  getSettingsFromServer();
 }
 
 // TODO: this is brute force - need some better server side implementation
@@ -121,7 +122,7 @@ function updatedata()
         }
     }).then(data => {
         // Handle the JSON data received from the server
-        updateDom(window.location.href.includes("roster") ? false : true, data);
+        updateDom(window.location.href.includes("settings") ? false : true, data);
         hideLoadingOverlay();
     }).catch(error => {
         // Handle any network or request-related errors here
