@@ -118,6 +118,7 @@ def db_remove_player_from_roster(user_id, player_name, player_number):
 
 # return a list of groups
 # each group is a list of players
+# group are specific to the user
 def db_get_groups(user_id, players):
     groups = []
     group_colours = ["#777777", "#999999", "#99CEAC", "#33B0AF", "#2E6C9D"]
@@ -164,7 +165,7 @@ def db_set_groups(user_id, groups):
 
     db.session.commit() # only do one commit
 
-def db_get_players(user_id):
+def db_get_full_roster(user_id):
     # read players from db
     query = Player.query.filter_by(user_id=user_id)
     dbplayers = query.all()
@@ -179,19 +180,19 @@ def db_get_players(user_id):
 
     return players;
 
+
 # gets the data to display on the webpage
 def db_get_data(user_id, game_id):
-    players = db_get_players(user_id)
-    (shifts, roster) = db_get_game(user_id, game_id, players=players)
-    return (roster, shifts, db_get_groups(user_id, players))
+    (shifts, roster) = db_get_game(user_id, game_id)
+    return (roster, shifts, db_get_groups(user_id, roster))
 
 def db_get_data_roster(user_id):
-    players = db_get_players(user_id)
+    players = db_get_full_roster(user_id)
     return (players, db_get_groups(user_id, players))
 
 # returns an array of shifts. each shift is an array of player.py:Player
 # also return roster (roster is an array of player.py:Player)
-def db_get_game(user_id, game_id, players):
+def db_get_game(user_id, game_id):
     log.debug(f"db_get_game {game_id}")
 
     shiftsdb = (
@@ -204,28 +205,25 @@ def db_get_game(user_id, game_id, players):
     shifts = [[] for _ in range(8)] # 8 empty shifts
 
     if not shiftsdb:
-        return shifts, players; # players = full roster
+        return shifts, db_get_full_roster(user_id); # this happens for default game
     
     # Now 'shifts' contains all shifts associated with the specified game_id
     for s, shift in enumerate(shiftsdb):
         parr = []
         for shift_player in shift.players:
-            p = player.find(players, shift_player.player.name)
-            if p != None:
-                parr.append(p)
+            # build player object from database
+            dbp = Player.query.filter_by(id=shift_player.player_id).one()
+            p = player.Player(dbp.name, dbp.number, dbp.id)
+            parr.append(p)
         shifts[s] = parr
-
-    if game_id == 1:
-        # return full roster if default game
-        return (shifts, players)
 
     # get game roster
     rosterdb = Roster.query.filter_by(game_id=game_id).one()
     roster = []
     for roster_player in rosterdb.players:
-        p = player.find(players, roster_player.player.name)
-        if p != None:
-            roster.append(p)
+        dbp = Player.query.filter_by(id=roster_player.player_id).one()
+        p = player.Player(dbp.name, dbp.number, dbp.id)
+        roster.append(p)
 
     return (shifts, roster)
 
@@ -284,6 +282,15 @@ def db_get_games(user_id):
         game['id'] = g.id
         game['name'] = g.name
         games.append(game)
+
+    # also return games that are shared
+    for gu in GameUsers.query.filter_by(user_id=user_id).all():
+        g = Game.query.filter_by(id=gu.game_id).one()
+        game = {}
+        game['id'] = g.id
+        game['name'] = g.name + "(s)"
+        games.append(game)
+    
     return games
 
 def db_save_game(user_id, game_id):
@@ -393,7 +400,13 @@ def db_add_share_user(user_id, email):
         log.debug(f"could not find email {email}")
         return False
     # share all games with user
+    # but first remove all entries in GameUser
+    # (in case person is added more than once)
+    GameUsers.query.filter_by(user_id=share_user.id).delete()
     for g in Game.query.filter_by(user_id=user_id).all():
+        # do not share default
+        if "default" in g.name:
+            continue
         newentry = GameUsers(game_id=g.id, user_id=share_user.id)
         db.session.add(newentry)
     db.session.commit()

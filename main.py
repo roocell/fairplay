@@ -74,6 +74,7 @@ import logging
 # TODO: use pusher.com for concurrent editing with multiple users
 # TODO: consider supabase.com for db hosting and social authentiation
 # TODO: limit login to one profile per email. (so can't go google and facebook with same email)
+# TODO: fairplay fails if more than 15 players in roster
 
 app = Flask(
     __name__,

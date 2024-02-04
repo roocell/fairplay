@@ -12,7 +12,7 @@ import double
 import models
 from sqlalchemy.orm.exc import NoResultFound
 from flask_login import current_user
-from models import db_get_game, db_get_players, db_get_groups, db_add_player_to_roster, db_remove_player_from_roster, db_set_groups, db_get_groups
+from models import db_get_game, db_get_full_roster, db_get_groups, db_add_player_to_roster, db_remove_player_from_roster, db_set_groups, db_get_groups
 
 def fairplay_validation(players, shifts):
   if verify_shift_limits(players, shifts):
@@ -22,27 +22,18 @@ def fairplay_validation(players, shifts):
   double.check_consecutive(players, shifts)
 
 def run_fairplay_algo(data):
-  # load server side data from database
-  players = db_get_players(current_user.id)
+  log.debug(data)
 
-  # trim roster (TODO: probably redundant with game roster in db)
-  clientRoster = []
-  for clientRosterPlayer in data["roster"]:
-    p = player.find(players, clientRosterPlayer["name"])
-    if p != None:
-      clientRoster.append(p)
-  players = clientRoster
-
-  shifts, roster = db_get_game(current_user.id, game_id=1, players=players)
-  groups = db_get_groups(current_user.id, players)
+  shifts, roster = db_get_game(current_user.id, data['game_id'])
+  groups = db_get_groups(current_user.id, roster)
 
   if data != None:
     # only clear the shifts that aren't locked
-    shifts = clear_shifts_not_locked(players, data)
+    shifts = clear_shifts_not_locked(roster, data)
 
-  get_shifts(shifts, players, groups)
-  fairplay_validation(players, shifts)
-  return players, shifts
+  get_shifts(shifts, roster, groups)
+  fairplay_validation(roster, shifts)
+  return roster, shifts
 
 # fairplay algorithm updates player shift count (get_shifts())
 # but not when a game is loaded - this is to be used in the latter case.
@@ -129,22 +120,21 @@ def update(data):
   log.debug(data)
 
   # load server side data from database
-  players = db_get_players(current_user.id)
-  shifts, roster = db_get_game(current_user.id, game_id=1, players=players)
+  shifts, roster = db_get_game(current_user.id, data['game_id'])
 
   clientSideGroups = data["groups"]
   if len(clientSideGroups) > 0:
     # roster page update
     db_set_groups(current_user.id, clientSideGroups)
-  groups = db_get_groups(current_user.id, players)
+  groups = db_get_groups(current_user.id, roster)
   
 
-  reset_player_shifts(players)
-  reset_player_locks(players)
+  reset_player_shifts(roster)
+  reset_player_locks(roster)
 
   # reset server data
-  serverSideRoster = players.copy()
-  players = []  # new roster
+  serverSideRoster = roster.copy()
+  roster = []  # new roster
   shifts = []
 
   # how to also calculate player things that the fairplay algorithm figures out
@@ -177,7 +167,7 @@ def update(data):
 
 
     # update non-persistant copy
-    players.append(p)
+    roster.append(p)
 
   # check for deleted players
   # only do this for roster page 
@@ -185,7 +175,7 @@ def update(data):
       # if there are no shifts, then it's the roster page.
       # fine for now - but should be something more explicit.
       for serverSidePlayer in serverSideRoster:
-        p = player.find(players, serverSidePlayer.name)
+        p = player.find(roster, serverSidePlayer.name)
         if p == None:
           log.debug(f"removing player {serverSidePlayer.name} {serverSidePlayer.number}")
           db_remove_player_from_roster(current_user.id, serverSidePlayer.name, serverSidePlayer.number)
@@ -196,7 +186,7 @@ def update(data):
 
   # fixup stronglines (players could be removed from roster)
   stronglines = groups
-  stronglines = strong.reload(players, stronglines)
+  stronglines = strong.reload(roster, stronglines)
   #strong.dump(stronglines)
 
   for i, webshift in enumerate(shiftsFromClientSide):
@@ -204,7 +194,7 @@ def update(data):
     log.debug(webshift)
     for pw in webshift:
       pwname = pw["name"].strip()
-      pp = player.find(players, pwname)
+      pp = player.find(roster, pwname)
       if pp == None:
         log.error(f"could not find player {pwname}")
       else:
@@ -216,9 +206,9 @@ def update(data):
         s.append(pp)
     shifts.append(s)
 
-  double.check_consecutive(players, shifts)
+  double.check_consecutive(roster, shifts)
   #print_shifts(shifts)
-  return (players, shifts, groups)
+  return (roster, shifts, groups)
 
 
 def load_files_and_run(players_file, stronglines_file, prevshifts_file):
