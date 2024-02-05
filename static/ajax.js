@@ -170,9 +170,9 @@ function updateDomRoster(mainpage, data)
     playerp.innerHTML = player.name;
     playerp.setAttribute('data-backgroundColor', player.colour);
     playerp.setAttribute('number-decoration', player.number);
-    if (mainpage && player.shifts > 0)
+    if (mainpage && player.shiftcnt > 0)
     {
-      playerp.setAttribute('shifts-decoration', player.shifts);
+      playerp.setAttribute('shifts-decoration', player.shiftcnt);
     } else {
       playerp.classList.add('hide-decoration');
     }
@@ -300,7 +300,7 @@ function updateDomShifts(mainpage, data)
       if (isMobile)
       {
         // in case we want a different display for mobile
-        //playerp.innerHTML = player.number + " " + shortenName(player.name) + " " + player.shifts;
+        //playerp.innerHTML = player.number + " " + shortenName(player.name) + " " + player.shiftcnt;
         playerp.innerHTML = player.name;
       } else {
         playerp.innerHTML = player.name;
@@ -311,7 +311,7 @@ function updateDomShifts(mainpage, data)
       playerp.setAttribute('number-decoration', player.number);
       if (mainpage)
       {
-        playerp.setAttribute('shifts-decoration', player.shifts);
+        playerp.setAttribute('shifts-decoration', player.shiftcnt);
       } else {
         playerp.classList.add('hide-decoration');
       }

@@ -1,43 +1,17 @@
 import random
 from logger import log as log
-import prevshift
 import json
+from models import Player
 
-
-# use a class encoder in order to dump python classes
-class PlayerEncoder(json.JSONEncoder):
-
-  def default(self, obj):
-    if isinstance(obj, Player):
-      # Return a dictionary representation of your class
-      return obj.__dict__
-    return super(PlayerEncoder, self).default(obj)
-
-
-class Player:
-
-  def __init__(self, name, number, id):
-    self.name = name
-    self.number = number
-    self.shifts = 0
-    self.prev = 0  # previous shifts
-    self.colour = "white"
-    self.dbl = [0] * 8  # an array of bools for each shift (doubleshift)
-    self.violates = 0  # violates max shifts
-    self.lts = [0] * 8  # an array of bools for each shift (lockedtoshift)
-    self.id = id # database id.
 
 # TODO: will have to fix the test scripts
-def load(players_json, prevshifts_json):
+def load(players_json, ):
   # load into an array of Players
   players = []
 
   # load json into an Array of Players
   for p in players_json:
     players.append(Player(p["name"], p["number"]))
-
-  if prevshift.enabled:
-    prevshift.load(players, prevshifts_json)
 
   return players
 
@@ -52,7 +26,7 @@ def find(players, name):
 def dump(players):
   for p in players:
     log.debug(
-        f"{p.number} {p.name}: {p.shifts} {p.prev} dbl {p.dbl} lts {p.lts}"
+        f"{p.number} {p.name}: {p.shiftcnt} {p.prev} dbl {p.dbl} lts {p.lts}"
     )
 
 
@@ -60,7 +34,7 @@ def dump(players):
 def get_sorted(players):
 
   # Sort players by minutes in ascending order
-  players.sort(key=lambda x: x.shifts)
+  players.sort(key=lambda x: x.shiftcnt)
 
   # Create a list of lists to store players grouped by minutes
   groups = []
@@ -70,11 +44,11 @@ def get_sorted(players):
 
   # Iterate through the sorted players and group them
   for player in players:
-    if player.shifts != current_shifts:
+    if player.shiftcnt != current_shifts:
       if current_group:
         groups.append(current_group)
       current_group = [player]
-      current_shifts = player.shifts
+      current_shifts = player.shiftcnt
     else:
       current_group.append(player)
   # Append the last group
@@ -86,9 +60,6 @@ def get_sorted(players):
   # so that players with fewer previous shifts get favoured
   for g in groups:
     random.shuffle(g)
-    if prevshift.enabled:
-      #log.debug("sorting with PREV SHIFT")
-      g.sort(key=lambda x: x.prev)
 
   # now put them all into a flat array again
   resorted_players = []

@@ -1,5 +1,6 @@
 from logger import log as log
 import player
+from models import Player
 
 # every game has players missing
 # this will tell you how many shifts players should get to be fair
@@ -49,7 +50,7 @@ def get_max_shifts(num_players):
 
 
 def check_shift_limits(players, shifts, logvsassert):
-  shift_list = [p.shifts for p in players]
+  shift_list = [p.shiftcnt for p in players]
   num_players = len(players)
 
   if num_players < 5 or num_players > 15:
@@ -78,14 +79,14 @@ def check_shift_limits(players, shifts, logvsassert):
   # check if any player exceed max shifts
   for p in players:
     p.violates = 0
-    if p.shifts > max_shifts:
+    if p.shiftcnt > max_shifts:
       p.violates = 1
       if logvsassert == "log":
         log.error( \
-          f"ERROR player {p.name} exceeds max shifts {p.shifts} > {max_shifts}")
+          f"ERROR player {p.name} exceeds max shifts {p.shiftcnt} > {max_shifts}")
       else:
-        assert p.shifts <= max_shifts, \
-          f"ERROR player {p.name} exceeds max shifts {p.shifts} > {max_shifts}"
+        assert p.shiftcnt <= max_shifts, \
+          f"ERROR player {p.name} exceeds max shifts {p.shiftcnt} > {max_shifts}"
 
   return True
 

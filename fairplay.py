@@ -7,12 +7,12 @@ import player
 import strong
 import argparse
 import commentjson
-import prevshift
 import double
 import models
 from sqlalchemy.orm.exc import NoResultFound
 from flask_login import current_user
 from models import db_get_game, db_get_full_roster, db_get_groups, db_add_player_to_roster, db_remove_player_from_roster, db_set_groups, db_get_groups
+from models import Player
 
 def fairplay_validation(players, shifts):
   if verify_shift_limits(players, shifts):
@@ -25,7 +25,7 @@ def run_fairplay_algo(data):
   log.debug(data)
 
   shifts, roster = db_get_game(current_user.id, data['game_id'])
-  groups = db_get_groups(current_user.id, roster)
+  groups = db_get_groups(current_user.id)
 
   if data != None:
     # only clear the shifts that aren't locked
@@ -41,20 +41,18 @@ def fairplay_updateshiftcount(shifts, players):
   reset_player_shifts(players)
   for s in shifts:
     for p in s:
-      p.shifts += 1
+      p.shiftcnt += 1
 
-def load_from_file(players_file, stronglines_file, prevshifts_file):
+def load_from_file(players_file, stronglines_file):
   with open(players_file, "r") as file:
     file_contents = file.read()
     players_json = commentjson.loads(file_contents)
   with open(stronglines_file, "r") as file:
     file_contents = file.read()
     stronglines_json = commentjson.loads(file_contents)
-  with open(prevshifts_file, "r") as file:
-    file_contents = file.read()
-  prevshifts_json = commentjson.loads(file_contents)
 
-  players = player.load(players_json, prevshifts_json)
+
+  players = player.load(players_json)
   player.dump(players)
 
   stronglines = strong.load(players, stronglines_json)
@@ -70,7 +68,7 @@ def find_player_in_shift(player_name, shift):
 
 def reset_player_shifts(players):
   for p in players:
-    p.shifts = 0
+    p.shiftcnt = 0
 
 
 def reset_player_locks(players):
@@ -100,7 +98,7 @@ def clear_shifts_not_locked(players, data):
         # only keep (and update) locked players
         if pw["lts"] == True:
           log.debug(f"locking {pp.name}")
-          pp.shifts += 1
+          pp.shiftcnt += 1
           # we may be locking the player to the shift - update the player array
           pp.lts[i] = int(pw["lts"])
           s.append(pp)
@@ -126,7 +124,7 @@ def update(data):
   if len(clientSideGroups) > 0:
     # roster page update
     db_set_groups(current_user.id, clientSideGroups)
-  groups = db_get_groups(current_user.id, roster)
+  groups = db_get_groups(current_user.id)
   
 
   reset_player_shifts(roster)
@@ -198,7 +196,7 @@ def update(data):
       if pp == None:
         log.error(f"could not find player {pwname}")
       else:
-        pp.shifts += 1
+        pp.shiftcnt += 1
         # we may be locking the player to the shift
         # (but moved a player that triggered an update - for example)
         # - update the player array
@@ -211,9 +209,9 @@ def update(data):
   return (roster, shifts, groups)
 
 
-def load_files_and_run(players_file, stronglines_file, prevshifts_file):
+def load_files_and_run(players_file, stronglines_file):
   # TODO: load from file and put into db 
-  players, stronglines = load_from_file(players_file, stronglines_file, prevshifts_file)
+  players, stronglines = load_from_file(players_file, stronglines_file)
   players, shifts = run_fairplay_algo(None)
   assert_shift_limits(players, shifts)
 
@@ -230,7 +228,7 @@ def get_players_not_at_max_shifts(players, shifts):
   max_shifts = get_max_shifts(len(players))
   for s in shifts:
     for p in s:
-      if p.shifts < max_shifts:
+      if p.shiftcnt < max_shifts:
         if p not in pnm_players:
           pnm_players.append(p)
   return pnm_players
@@ -262,14 +260,14 @@ def get_strongline_shifts(shifts, players, stronglines, num_shifts=8):
     for p in sl:
       # consider shift limits
       pshifts = []
-      pshifts = [pp.shifts for pp in players]  # all players shifts
+      pshifts = [pp.shiftcnt for pp in players]  # all players shifts
       available_max_shift_spots = pcount_for_max_shifts - pshifts.count(
           max_shifts)
 
       # stop filling in stronglines if:
       #  - this player is already at max shifts
-      #log.debug(f" {p.shifts} < {max_shifts}")
-      if p.shifts >= max_shifts:
+      #log.debug(f" {p.shiftcnt} < {max_shifts}")
+      if p.shiftcnt >= max_shifts:
         add_shift = False
 
       #  - we already have enough players at max shifts
@@ -279,7 +277,7 @@ def get_strongline_shifts(shifts, players, stronglines, num_shifts=8):
 
       #  - will adding this shift put you over?
       #log.debug(f" {available_max_shift_spots} < {len(sl)}")
-      if p.shifts == (max_shifts - 1) and available_max_shift_spots < len(sl):
+      if p.shiftcnt == (max_shifts - 1) and available_max_shift_spots < len(sl):
         add_shift = False
 
 
@@ -293,9 +291,9 @@ def get_strongline_shifts(shifts, players, stronglines, num_shifts=8):
       # the same strongline object into multiple shifts
       # this will mess up shift counting otherwise
       for p in sl:
-        p.shifts += 1
+        p.shiftcnt += 1
       shifts[i] = sl.copy()
-      #log.debug(f"add Shift: {sl[0].name} {sl[0].shifts}")
+      #log.debug(f"add Shift: {sl[0].name} {sl[0].shiftcnt}")
     else:
       if len(sl) > 0: # could be no stronglines defined
         log.debug(f"SHIFT LIMIT REACHED: {sl[0].name}")
@@ -352,8 +350,8 @@ def fill_shifts(players, shifts, stronglines):
 
       # fill in the shift and increment shifts
       # but also keep on eye on max shifts to make sure there's no error
-      p_to_add.shifts += 1
-      assert p_to_add.shifts <= max_shifts, f"ERROR: we've exceeded max shifts {max_shifts} for {len(players)}"
+      p_to_add.shiftcnt += 1
+      assert p_to_add.shiftcnt <= max_shifts, f"ERROR: we've exceeded max shifts {max_shifts} for {len(players)}"
 
       #log.debug(f"ADDING {p_to_add.name} to shift {i}")
       s.append(p_to_add)

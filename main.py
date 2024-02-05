@@ -19,6 +19,8 @@ from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
 from oauthlib.oauth2.rfc6749.errors import MismatchingStateError
 from models import db_get_data, db_get_data_roster, db_set_game, db_get_games, db_save_game, db_delete_game, db_change_game
 from models import db_get_shared_users, db_add_shared_user, db_del_shared_user
+from models import Player, PlayerEncoder
+
 from context_processors import git_commit_id
 import logging
 
@@ -62,7 +64,6 @@ import logging
 # TODO: need to logout and be able to choose a different google user.
 # TODO: when shift is created, sort by colour, then number. either that or preserve shift/group order when saved
 # TODO: mobile UI should be swipe left/right for shifts/groups
-# TODO: extend player db object with non-db params and get rid of player.py (only one representation of a Player)
 # TODO: need to get email permission from facebook login as well.
 # TODO: limit text field size - and optimze length of text in database to match.
 # TODO: consider using Celery for pipelining requests
@@ -96,9 +97,9 @@ def inject_git_commit_id():
 def generate_json_data(roster, shifts, groups):
   data = {
       "status" : "ok",
-      "players": json.dumps(roster, cls=player.PlayerEncoder),
-      "shifts": json.dumps(shifts, cls=player.PlayerEncoder),
-      "groups": json.dumps(groups, cls=player.PlayerEncoder),
+      "players": json.dumps(roster, cls=PlayerEncoder),
+      "shifts": json.dumps(shifts, cls=PlayerEncoder),
+      "groups": json.dumps(groups, cls=PlayerEncoder),
   }
   #log.debug(data)
   return data

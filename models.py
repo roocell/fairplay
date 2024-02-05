@@ -3,7 +3,7 @@ from flask_login import UserMixin, LoginManager
 from flask_dance.consumer.storage.sqla import OAuthConsumerMixin
 from flask import session
 from logger import log as log
-import player
+import json
 import commentjson
 
 db = SQLAlchemy()
@@ -24,12 +24,45 @@ class Player(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), nullable=False)
     number = db.Column(db.Integer)
-    prevshifts = db.Column(db.Integer)
     group = db.Column(db.Integer)
     # ForeignKey establishes the relationship with the User model
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     shifts = db.relationship('PlayerShifts', backref='player', lazy=True)
     roster = db.relationship('PlayerRosters', backref='player', lazy=True)
+
+    shiftcnt = 0
+    colour = "white"
+    dbl = [0] * 8  # an array of bools for each shift (doubleshift)
+    violates = 0  # violates max shifts
+    lts = [0] * 8  # an array of bools for each shift (lockedtoshift)
+    
+    def __init__(self, name, number, group, user_id):
+        self.name = name
+        self.number = number
+        self.group = group
+        self.user_id = user_id
+
+    
+# use a class encoder in order to dump python classes
+class PlayerEncoder(json.JSONEncoder):
+
+  def default(self, obj):
+    if isinstance(obj, Player):
+      # Return a dictionary representation of your class
+      player = {
+          "name" : obj.name,
+          "number" : obj.number,
+          "group" : obj.group,
+          "id" : obj.id,
+
+          "shiftcnt" : obj.shiftcnt,
+          "colour" : obj.colour,
+          "dbl" : obj.dbl,
+          "violates" : obj.violates,
+          "lts" : obj.lts,
+      }
+      return player
+    return super(PlayerEncoder, self).default(obj)
 
 class Shift(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -119,22 +152,18 @@ def db_remove_player_from_roster(user_id, player_name, player_number):
 # return a list of groups
 # each group is a list of players
 # group are specific to the user
-def db_get_groups(user_id, players):
+def db_get_groups(user_id):
     groups = []
     group_colours = ["#777777", "#999999", "#99CEAC", "#33B0AF", "#2E6C9D"]
 
     # query Player table and build groups
     for g in range(1,4):
         dbplayers = Player.query.filter_by(user_id=user_id, group=g).all()
-        parr = []
         # adjust group colours
         colour = group_colours.pop()
         for p in dbplayers:
-            pp = player.find(players, p.name)
-            if pp != None:
-                pp.colour = colour
-                parr.append(pp)
-        groups.append(parr)
+            p.colour = colour
+        groups.append(dbplayers)
 
     return groups
 
@@ -170,25 +199,19 @@ def db_get_full_roster(user_id):
     query = Player.query.filter_by(user_id=user_id)
     dbplayers = query.all()
     log.debug(f"found {len(dbplayers)} players in database for user_id {user_id}")
-    # create array of player.py players
-    # TODO: in flask session ?
-
-    players = []
-    for dbp in dbplayers:
-        p = player.Player(dbp.name, dbp.number, dbp.id)
-        players.append(p)
-
-    return players;
+    return dbplayers;
 
 
 # gets the data to display on the webpage
 def db_get_data(user_id, game_id):
+    groups = db_get_groups(user_id) # must be first - sets colours
     (shifts, roster) = db_get_game(user_id, game_id)
-    return (roster, shifts, db_get_groups(user_id, roster))
+    return (roster, shifts, groups)
 
 def db_get_data_roster(user_id):
+    groups = db_get_groups(user_id) # must be first - sets colours
     players = db_get_full_roster(user_id)
-    return (players, db_get_groups(user_id, players))
+    return (players, groups)
 
 # returns an array of shifts. each shift is an array of player.py:Player
 # also return roster (roster is an array of player.py:Player)
@@ -213,8 +236,7 @@ def db_get_game(user_id, game_id):
         for shift_player in shift.players:
             # build player object from database
             dbp = Player.query.filter_by(id=shift_player.player_id).one()
-            p = player.Player(dbp.name, dbp.number, dbp.id)
-            parr.append(p)
+            parr.append(dbp)
         shifts[s] = parr
 
     # get game roster
@@ -222,8 +244,7 @@ def db_get_game(user_id, game_id):
     roster = []
     for roster_player in rosterdb.players:
         dbp = Player.query.filter_by(id=roster_player.player_id).one()
-        p = player.Player(dbp.name, dbp.number, dbp.id)
-        roster.append(p)
+        roster.append(dbp)
 
     return (shifts, roster)
 
