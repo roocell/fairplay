@@ -26,15 +26,15 @@ for subfolder in os.listdir(current_directory):
   if os.path.isdir(subfolder):
     subfolder_path = os.path.join(current_directory, subfolder)
     players_file = os.path.join(subfolder_path, "players.json")
-    stronglines_file = os.path.join(subfolder_path, "stronglines.json")
+    groups_file = os.path.join(subfolder_path, "groups.json")
     prevshifts_file = os.path.join(subfolder_path, "prevshifts.json")
 
     # Check if the required files exist in the subfolder
     if os.path.exists(players_file) and os.path.exists(
-        stronglines_file) and os.path.exists(prevshifts_file):
+        groups_file) and os.path.exists(prevshifts_file):
       # Call fairplay.py with the specified arguments
       log.debug(f"<<<<<<<< running {subfolder_path} >>>>>>>>>>>>>>>")
-      fairplay.load_files_and_run(players_file, stronglines_file,
+      fairplay.load_files_and_run(players_file, groups_file,
                                   prevshifts_file)
       log.debug(f"<<<<<<<< done {subfolder_path} >>>>>>>>>>>>>>>")
 

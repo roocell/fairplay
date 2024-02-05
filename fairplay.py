@@ -4,7 +4,7 @@ from logger import log as log
 from shift_limits import get_shift_limits, get_max_shifts, verify_shift_limits, get_pcount_for_max_shifts, assert_shift_limits
 from utils import no_duplicates
 import player
-import strong
+import groups
 import argparse
 import commentjson
 import double
@@ -43,20 +43,20 @@ def fairplay_updateshiftcount(shifts, players):
     for p in s:
       p.shiftcnt += 1
 
-def load_from_file(players_file, stronglines_file):
+def load_from_file(players_file, groups_file):
   with open(players_file, "r") as file:
     file_contents = file.read()
     players_json = commentjson.loads(file_contents)
-  with open(stronglines_file, "r") as file:
+  with open(groups_file, "r") as file:
     file_contents = file.read()
-    stronglines_json = commentjson.loads(file_contents)
+    groups_json = commentjson.loads(file_contents)
 
 
   players = player.load(players_json)
   player.dump(players)
 
-  stronglines = strong.load(players, stronglines_json)
-  return (players, stronglines)
+  groups = groups.load(players, groups_json)
+  return (players, groups)
 
 
 def find_player_in_shift(player_name, shift):
@@ -182,10 +182,9 @@ def update(data):
   #log.debug("New roster")
   #player.dump(players)
 
-  # fixup stronglines (players could be removed from roster)
-  stronglines = groups
-  stronglines = strong.reload(roster, stronglines)
-  #strong.dump(stronglines)
+  # fixup groups (players could be removed from roster)
+  groups = groups.reload(roster, groups)
+  #groups.dump(groups)
 
   for i, webshift in enumerate(shiftsFromClientSide):
     s = []
@@ -209,9 +208,9 @@ def update(data):
   return (roster, shifts, groups)
 
 
-def load_files_and_run(players_file, stronglines_file):
+def load_files_and_run(players_file, groups_file):
   # TODO: load from file and put into db 
-  players, stronglines = load_from_file(players_file, stronglines_file)
+  players, groups = load_from_file(players_file, groups_file)
   players, shifts = run_fairplay_algo(None)
   assert_shift_limits(players, shifts)
 
@@ -234,15 +233,15 @@ def get_players_not_at_max_shifts(players, shifts):
   return pnm_players
 
 
-# build a set of groups of strongline players
+# build a set of groups of players
 # this is how we start building our shifts
-def get_strongline_shifts(shifts, players, stronglines, num_shifts=8):
-  # if there's no stronglines defined - do nothing
-  if len(stronglines) == 0:
+def get_groups_shifts(shifts, players, groups, num_shifts=8):
+  # if there's no groups defined - do nothing
+  if len(groups) == 0:
     return
   
   # shuffle them so we don't always have the same starting line
-  random.shuffle(stronglines)
+  random.shuffle(groups)
 
   shiftlimits = get_shift_limits(len(players))
   pcount_for_max_shifts = get_pcount_for_max_shifts(len(players))
@@ -251,9 +250,9 @@ def get_strongline_shifts(shifts, players, stronglines, num_shifts=8):
   log.debug(max_shifts)
   log.debug(pcount_for_max_shifts)
 
-  # make 8 shifts with stronglines
+  # make 8 shifts with groups
   for i in range(num_shifts):
-    sl = stronglines[i % len(stronglines)]
+    sl = groups[i % len(groups)]
 
     # as we do this keep track of shifts
     add_shift = True
@@ -264,7 +263,7 @@ def get_strongline_shifts(shifts, players, stronglines, num_shifts=8):
       available_max_shift_spots = pcount_for_max_shifts - pshifts.count(
           max_shifts)
 
-      # stop filling in stronglines if:
+      # stop filling in groups if:
       #  - this player is already at max shifts
       #log.debug(f" {p.shiftcnt} < {max_shifts}")
       if p.shiftcnt >= max_shifts:
@@ -281,28 +280,28 @@ def get_strongline_shifts(shifts, players, stronglines, num_shifts=8):
         add_shift = False
 
 
-    # if the shift isn't empty - don't insert the strongline
+    # if the shift isn't empty - don't insert the groups
     # this will also cover the case where a shift is locked
     if len(shifts[i]) > 0:  # must be locked
       add_shift = False
 
     if add_shift:
-      # make a copy of the stronglong so we're not putting
-      # the same strongline object into multiple shifts
+      # make a copy of the groups so we're not putting
+      # the same groups object into multiple shifts
       # this will mess up shift counting otherwise
       for p in sl:
         p.shiftcnt += 1
       shifts[i] = sl.copy()
       #log.debug(f"add Shift: {sl[0].name} {sl[0].shiftcnt}")
     else:
-      if len(sl) > 0: # could be no stronglines defined
+      if len(sl) > 0: # could be no groups defined
         log.debug(f"SHIFT LIMIT REACHED: {sl[0].name}")
 
-  # now the shifts are filled with stronglines
+  # now the shifts are filled with groups
   # all shifts could be filled - but they could also be partly filled
-  # if there wasn't enough stronglines defined
+  # if there wasn't enough groups defined
   # if that's the case we should go through and create num_shifts shifts
-  # and space out the stronglines
+  # and space out the groups
   if len(shifts) < num_shifts:
     diff = num_shifts - len(shifts)
     for i in range(diff):
@@ -314,11 +313,11 @@ def get_strongline_shifts(shifts, players, stronglines, num_shifts=8):
   ) == num_shifts, f"didn't get to the right number of shifts {len(shifts)}"
 
 
-def fill_shifts(players, shifts, stronglines):
+def fill_shifts(players, shifts, groups):
   # assumes shifts is already an 8 shift array partially filled in with players
 
-  # get a list of players not in the stronglines
-  nsl_players = strong.get_players_not_in_stronglines(players, stronglines)
+  # get a list of players not in the groups
+  nsl_players = groups.get_players_not_in_groups(players, groups)
   assert no_duplicates(nsl_players), "nsl_players has duplicates"
   #log.debug("nsl_players")
   #player.dump(nsl_players)
@@ -363,9 +362,9 @@ def fill_shifts(players, shifts, stronglines):
   return shifts
 
 
-def get_shifts(shifts, players, stronglines, num_shifts=8):
-  get_strongline_shifts(shifts, players, stronglines, num_shifts)
-  fill_shifts(players, shifts, stronglines)
+def get_shifts(shifts, players, groups, num_shifts=8):
+  get_groups_shifts(shifts, players, groups, num_shifts)
+  fill_shifts(players, shifts, groups)
 
 
 def verify_unique_players_on_shifts(shifts):

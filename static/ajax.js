@@ -338,7 +338,7 @@ function updateDomShifts(mainpage, data)
 }
 
 // used for both the main page and the roster page
-// roster page uses shift divs for 'groups'(stronglines)
+// roster page uses shift divs for 'groups'(groups)
 function updateDom(mainpage, data)
 {
   if (mainpage == true)

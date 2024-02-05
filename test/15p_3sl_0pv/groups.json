@@ -4,16 +4,17 @@
 
 # the number of list here are limited to the number of players on your entire team
 # for example
-# if you have 15 players and an 8-shift game, there's no point in adding more than 3 strong lines
+# if you have 15 players and an 8-shift game, there's no point in adding more than 3 groups
 # because under fairplay rules no player can get more than 3 shifts
 
-# list the strong lines in order of strength
+# list the groups in order of strength
 # because the algorithm will adjust the number of shifts
 # based on this order
 # this is the order in which you'll decide which lines
 # end up with more shifts
+
 [
-  ["Nathanyel Moshonas", "Grayson  Caluori", "Carter Caluori"],
-  ["Rhys Carver", "Parker Gorsky", "Logan Kujawski"],
-  ["Nikolas Brouillard", "Logan Le", "James Koziel"]
+  ["Ben Larocque", "Wes Frechette", "Martin Leclair"],
+  ["Alex Panagakos", "Zachary Shouldice Russell", "Sebastien Clersaint"],
+  ["Ben Lim", "Blake Turcotte", "Iseoluwa Ola"],
 ]

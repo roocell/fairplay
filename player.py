@@ -5,7 +5,7 @@ from models import Player
 
 
 # TODO: will have to fix the test scripts
-def load(players_json, ):
+def load(players_json):
   # load into an array of Players
   players = []
 

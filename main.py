@@ -6,7 +6,7 @@ from logger import log as log
 import json
 import player
 import os
-import strong
+import groups
 import sys
 
 from flask import Flask, jsonify, render_template, flash, redirect, url_for, request, session
