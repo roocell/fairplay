@@ -3,7 +3,7 @@ import player
 
 # each line in the files contains a list of players
 # this function will return a list of groups of Players
-def load(players, groupsjson):
+def groups_load(players, groupsjson):
   #groups_colours = ["#f0d5aa", "#cff6ff", "#e1ffcf", "#f1d9ff", "#ffd9d9"]
   groups_colours = ["#777777", "#999999", "#99CEAC", "#33B0AF", "#2E6C9D"]
   groups = []
@@ -30,7 +30,7 @@ def load(players, groupsjson):
 # need to reload groups if roster is adjusted
 # might have to remove players
 # TODO: need UI to adjust groups
-def reload(players, groups):
+def groups_reload(players, groups):
   groups_new = []
   for g in groups:
     group = []
@@ -59,7 +59,7 @@ def get_players_not_in_groups(players, groups):
   return nsl_players
 
 
-def dump(groups):
+def groups_dump(groups):
   for sl in groups:
     log.debug(" ")
     log.debug("groups:")

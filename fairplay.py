@@ -4,7 +4,7 @@ from logger import log as log
 from shift_limits import get_shift_limits, get_max_shifts, verify_shift_limits, get_pcount_for_max_shifts, assert_shift_limits
 from utils import no_duplicates
 import player
-import groups
+from groups import groups_load, groups_reload, get_players_not_in_groups
 import argparse
 import commentjson
 import double
@@ -55,7 +55,7 @@ def load_from_file(players_file, groups_file):
   players = player.load(players_json)
   player.dump(players)
 
-  groups = groups.load(players, groups_json)
+  groups = groups_load(players, groups_json)
   return (players, groups)
 
 
@@ -160,9 +160,7 @@ def update(data):
       log.debug(f"adding new player: {clientSidePlayer['number']} {clientSidePlayer['name']}")
 
       # update persistant copy (do this first so we know db id)
-      dbid = db_add_player_to_roster(current_user.id, clientSidePlayer['name'], clientSidePlayer["number"])
-      p = player.Player(clientSidePlayer["name"], clientSidePlayer["number"], dbid)
-
+      p = db_add_player_to_roster(current_user.id, clientSidePlayer['name'], clientSidePlayer["number"])
 
     # update non-persistant copy
     roster.append(p)
@@ -183,7 +181,7 @@ def update(data):
   #player.dump(players)
 
   # fixup groups (players could be removed from roster)
-  groups = groups.reload(roster, groups)
+  groups = groups_reload(roster, groups)
   #groups.dump(groups)
 
   for i, webshift in enumerate(shiftsFromClientSide):
@@ -317,7 +315,7 @@ def fill_shifts(players, shifts, groups):
   # assumes shifts is already an 8 shift array partially filled in with players
 
   # get a list of players not in the groups
-  nsl_players = groups.get_players_not_in_groups(players, groups)
+  nsl_players = get_players_not_in_groups(players, groups)
   assert no_duplicates(nsl_players), "nsl_players has duplicates"
   #log.debug("nsl_players")
   #player.dump(nsl_players)

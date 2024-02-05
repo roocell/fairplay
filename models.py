@@ -140,7 +140,7 @@ def db_add_player_to_roster(user_id, player_name, player_number):
     player = Player(name=player_name, number=player_number, user_id=user_id)
     db.session.add(player)
     db.session.commit()
-    return player.id
+    return player
 
 def db_remove_player_from_roster(user_id, player_name, player_number):
     query = Player.query.filter_by(user_id=user_id, name=player_name, number=player_number)
