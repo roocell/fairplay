@@ -36,6 +36,31 @@ function addPlayer() {
   updatedata();
 }
 
+
+function generateSettingsDiv(shiftscontainer)
+{
+  var settingscontainer = document.createElement('div');
+  settingscontainer.classList.add('settings');
+
+  var header = document.createElement('h3');
+  header.className = "heading";
+  header.style.textAlign = "right";
+  header.innerHTML = "Game Sharing List"
+  settingscontainer.appendChild(header);
+
+  shiftscontainer.appendChild(settingscontainer);
+  settingscontainer.innerHTML += `
+    <!-- some settings -->
+    <form class="settings-form" id="settings-form">
+      <input type="text" class="player-input" placeholder="share with <email>" id="share-email" />
+      <button type="button" class="settings-button" onclick="addSharedUser()">+</button>
+    </form>
+    <div id="shared-user-list">
+      
+    </div>
+    `
+}
+
 function updateSharedUsersInDom(data)
 {
   sharediv = document.getElementById("shared-user-list");
@@ -44,13 +69,27 @@ function updateSharedUsersInDom(data)
   console.log(data);
   var shared_users = JSON.parse(data.shared_users);
 
-  var ul = document.createElement('ul');
   shared_users.forEach(function(share_user) {
-    var li = document.createElement('li');
-    li.textContent = share_user.email;
-    ul.appendChild(li);
+    var sharedusercontainer = document.createElement('div');
+    sharedusercontainer.style.display = 'grid';
+    sharedusercontainer.style.gridTemplateColumns = 'auto auto'; // two columns
+
+    var shareduser = document.createElement('p');
+    shareduser.className = "shareduser";
+    shareduser.innerHTML = share_user.email;
+    var button = document.createElement('button');
+    button.className = "settings-button";
+    button.setAttribute('type', 'button');
+    button.textContent = '-';
+    button.onclick = function() {
+      deleteSharedUser(share_user.email);
+    };
+    sharediv.appendChild(sharedusercontainer);
+    sharedusercontainer.appendChild(shareduser);
+    sharedusercontainer.appendChild(button);
+
   });
-  sharediv.appendChild(ul);
+  
 }
 
 function sendSettingsToServer(share_email)
@@ -112,10 +151,39 @@ function getSettingsFromServer()
 
 }
 
-function addShareUser() {
+function addSharedUser() {
   share_email = document.getElementById("share-email");
 
   // send list of shared emails
   // all games will be shared (for now)
   sendSettingsToServer(share_email.value);
+}
+
+function deleteSharedUser(share_email)
+{
+    var data = {"share_email" : share_email};
+    var datastr = JSON.stringify(data);
+    //showLoadingOverlay();
+    fetch('/deleteshareduser', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json'
+      },
+      body: datastr,
+  }).then(response => {
+        if (response.ok) {
+            // If the response status is in the 200-299 range, it means the request was successful.
+            return response.json(); // Parse the response as JSON
+        } else {
+            // Handle errors or non-successful responses here
+            throw new Error('Request failed with status: ' + response.status);
+        }
+    }).then(data => {
+        updateSharedUsersInDom(data)
+        //hideLoadingOverlay();
+    }).catch(error => {
+        // Handle any network or request-related errors here
+        console.error(error);
+        //hideLoadingOverlay();
+    });
 }

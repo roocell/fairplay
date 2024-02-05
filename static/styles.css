@@ -193,6 +193,7 @@
   flex-shrink: 0;
 }
 
+
 .player {
   position:relative;
   background: white;
@@ -367,4 +368,80 @@
 /* Optional: Hover effect for links in the footer */
 .footer a:hover {
   color: #555; /* Choose a slightly darker color on hover */
+}
+
+
+/* settings styles */
+.settings {
+  position: relative; /* so the lock button can position - this can't be static (default)*/
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+
+  background: #f4f4f4;
+  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.25);
+
+  padding: 12px;
+  border-radius: 4px;
+  min-height: 120px;
+  margin: 10px;
+
+  flex-shrink: 0;
+}
+
+.shareduser {
+  position:relative;
+  background: white;
+  color: black;
+  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.15);
+
+  padding: 12px;
+  border-radius: 4px;
+
+  font-size: 16px;
+  cursor: move;
+  outline-style: none;
+
+  touch-action: none; /* Prevent default touch behavior */
+  user-drag: none; /* Disable user-drag for older browsers */
+
+  overflow: hidden; /* so the number gets clips */
+  text-overflow: ellipsis;
+  margin: 0px 0px 10px 0px;
+
+}
+
+
+.settings-form {
+}
+
+.settings-form input {
+  padding: 12px;
+
+  border-radius: 4px;
+  border: none;
+
+  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.25);
+  background: white;
+
+  font-size: 14px;
+  outline: none;
+}
+
+.settings-button {
+  padding: 12px 18px;
+
+  border-radius: 4px;
+  border: none;
+
+  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.25);
+  background: #ffffff;
+  color: black;
+  margin: 0px 0px 0px 10px;
+
+  font-weight: bold;
+  font-size: 12px;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
 }

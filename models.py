@@ -286,6 +286,9 @@ def db_get_games(user_id):
     # also return games that are shared
     for gu in GameUsers.query.filter_by(user_id=user_id).all():
         g = Game.query.filter_by(id=gu.game_id).one()
+        if "default" in g.name:
+            # don't add default game in shared list
+            continue
         game = {}
         game['id'] = g.id
         game['name'] = g.name + "(s)"
@@ -393,24 +396,37 @@ def db_get_shared_users(user_id):
             unique_emails.add(user.email)
     return shared_users
 
-def db_add_share_user(user_id, email):
-    log.debug(f"db_add_share_user email {email}")
+def db_add_shared_user(user_id, email):
+    log.debug(f"db_add_shared_user email {email}")
     share_user = User.query.filter_by(email=email).one()
     if not share_user:
+        # could happen if user entered invalid email
         log.debug(f"could not find email {email}")
+        return False
+    if share_user.id == user_id:
+        log.debug(f"can't add self {email}")
         return False
     # share all games with user
     # but first remove all entries in GameUser
     # (in case person is added more than once)
     GameUsers.query.filter_by(user_id=share_user.id).delete()
     for g in Game.query.filter_by(user_id=user_id).all():
-        # do not share default
-        if "default" in g.name:
-            continue
+        # note: share default game - but dont return it for shared game list
         newentry = GameUsers(game_id=g.id, user_id=share_user.id)
         db.session.add(newentry)
     db.session.commit()
     return True
 
-def db_remove_share_user(user_id, email):
+def db_del_shared_user(user_id, email):
+    log.debug(f"db_del_shared_user email {email}")
+    share_user = User.query.filter_by(email=email).one()
+    if not share_user:
+        # should never happen
+        log.error(f"del could not find email {email}")
+        return False
+    # share all games with user
+    # but first remove all entries in GameUser
+    # (in case person is added more than once)
+    GameUsers.query.filter_by(user_id=share_user.id).delete()
+    db.session.commit()
     return True

@@ -18,7 +18,7 @@ from oauth import google_blueprint, facebook_blueprint
 from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
 from oauthlib.oauth2.rfc6749.errors import MismatchingStateError
 from models import db_get_data, db_get_data_roster, db_set_game, db_get_games, db_save_game, db_delete_game, db_change_game
-from models import db_get_shared_users, db_add_share_user, db_remove_share_user
+from models import db_get_shared_users, db_add_shared_user, db_del_shared_user
 from context_processors import git_commit_id
 import logging
 
@@ -55,7 +55,6 @@ import logging
 # TODO: notes section for printout
 # TODO: make another pass at the end to try and remove double shifts
 # TODO: might be useful to sort the roster by shifts so it's easy to see who's got the low numbers (while planning multiple games)
-# TODO: POST error should popup red banner with error (otherwise it's silent)
 # TODO: mobile (phone) should be a menu rather than buttons
 # TODO: hover over roster header should display what the fairplay is for the roster size.
 # TODO: could move python fairplay code to client side (better for scaling)
@@ -75,6 +74,7 @@ import logging
 # TODO: consider supabase.com for db hosting and social authentiation
 # TODO: limit login to one profile per email. (so can't go google and facebook with same email)
 # TODO: fairplay fails if more than 15 players in roster
+# TODO: proper error reporting from server red banner with error (otherwise it's silent)
 
 app = Flask(
     __name__,
@@ -193,7 +193,21 @@ def savegame():
 @app.route('/updatesettings', methods=['POST'])
 def updatesettings():
   data = request.get_json()
-  if db_add_share_user(current_user.id, data["share_email"]) == False:
+  if db_add_shared_user(current_user.id, data["share_email"]) == False:
+    status = "failed"
+  else :
+    status = "ok"
+  shared_users = db_get_shared_users(current_user.id)
+  data = {
+    "status" : status,
+    "shared_users": json.dumps(shared_users)
+  }
+  return data
+
+@app.route('/deleteshareduser', methods=['POST'])
+def deleteshareduser():
+  data = request.get_json()
+  if db_del_shared_user(current_user.id, data["share_email"]) == False:
     data = {
       "status" : "failed",
       "reason" : "could not find email"

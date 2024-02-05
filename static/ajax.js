@@ -28,7 +28,7 @@ function onLoadRoster()
   {
     updateDomWithDrawer();
   }
-  getSettingsFromServer();
+  
 }
 
 // TODO: this is brute force - need some better server side implementation
@@ -237,6 +237,7 @@ function updateDomShifts(mainpage, data)
   } else {
     prefix = "group"
     shiftdata = data.groups;
+
   }
 
   // groups will reuse the shifts class for CSS
@@ -255,6 +256,10 @@ function updateDomShifts(mainpage, data)
   shiftscontainer.appendChild(shiftsrow2);
 
   lanes.appendChild(shiftscontainer);
+  if (!mainpage)
+  {
+    generateSettingsDiv(shiftscontainer);
+  }
 
   var i = 0;
   var shiftsData = JSON.parse(shiftdata);
@@ -409,6 +414,7 @@ function getserverdata_roster()
     }).then(data => {
         // Handle the JSON data received from the server
         updateDom(false, data);
+        getSettingsFromServer();
       }).catch(error => {
         // Handle any network or request-related errors here
         console.error(error);
