@@ -71,7 +71,6 @@ import logging
 # TODO: multiple rosters under one user (if coach for more than one team)
 # TODO: tooltip to explain what the player colours are for.
 # TODO: colour shift decoration if outlier. i.e. - if 13 players highlight the one with 4 shifts. if 15 players - hightlight the ones with 2 shifts.
-# TODO: use pusher.com for concurrent editing with multiple users
 # TODO: consider supabase.com for db hosting and social authentiation
 # TODO: limit login to one profile per email. (so can't go google and facebook with same email)
 # TODO: fairplay fails if more than 15 players in roster
@@ -94,7 +93,7 @@ app.logger.addHandler(handler)
 def inject_git_commit_id():
     return git_commit_id()
 
-def generate_json_data(roster, shifts, groups):
+def generate_json_data_for_roster(roster, shifts, groups):
   data = {
       "status" : "ok",
       "players": json.dumps(roster, cls=PlayerEncoder),
@@ -104,6 +103,16 @@ def generate_json_data(roster, shifts, groups):
   #log.debug(data)
   return data
 
+def generate_json_data_for_game(roster, shifts, groups, game_id):
+  data = {
+      "status" : "ok",
+      "game_id" : game_id,
+      "players": json.dumps(roster, cls=PlayerEncoder),
+      "shifts": json.dumps(shifts, cls=PlayerEncoder),
+      "groups": json.dumps(groups, cls=PlayerEncoder),
+  }
+  #log.debug(data)
+  return data
 
 @app.route('/')
 def home_page():
@@ -130,7 +139,9 @@ def updatedata():
   if data["game_id"] != 0: # will be 0 for roster page
     fairplay.fairplay_validation(roster, shifts)
     db_set_game(current_user.id, game_id=data["game_id"], shifts=shifts, roster=roster)
-  return generate_json_data(roster, shifts, groups)
+    return generate_json_data_for_game(roster, shifts, groups, data["game_id"])
+  else:
+    return generate_json_data_for_roster(roster, shifts, groups)
 
 
 @app.route('/getdata', methods=['POST'])
@@ -141,14 +152,14 @@ def getdata():
   roster, shifts, groups = db_get_data(current_user.id, data["game_id"])
   fairplay.fairplay_validation(roster, shifts) # to mark dbl/violate
   fairplay.fairplay_updateshiftcount(shifts, roster)
-  return generate_json_data(roster, shifts, groups)
+  return generate_json_data_for_game(roster, shifts, groups, data["game_id"])
 
 @app.route('/getdataroster', methods=['GET'])
 def getdataroster():
   if current_user.is_authenticated == False:
      return json.dumps({"status" : "not_logged_in"})
   players, groups = db_get_data_roster(current_user.id)
-  return generate_json_data(players, [], groups)
+  return generate_json_data_for_roster(players, [], groups)
 
 @app.route('/settings', methods=['GET'])
 def roster():
@@ -166,7 +177,7 @@ def runfairplay():
   roster, shifts = fairplay.run_fairplay_algo(data) # uses data["roster"] inside
   db_set_game(current_user.id, game_id=data["game_id"], shifts=shifts, roster=roster)
 
-  return generate_json_data(roster, shifts, [])
+  return generate_json_data_for_game(roster, shifts, [], game_id)
 
 
 @app.route('/getgames', methods=['GET'])
@@ -250,10 +261,18 @@ def changegamename():
   }
   return data
 
-
-
-
-
+# a route for JS to get keys for things (like pusher)
+@app.route('/getconfig', methods=['GET'])
+def getconfig():
+  json_file_path = 'mypusher.json'
+  with open(json_file_path, 'r') as file:
+    pusher_info = json.load(file)
+    data = {
+      "status" : "ok",
+      "PUSHER_API_KEY": pusher_info["key"]
+    }
+    # TODO: still skeptical if this is secure
+    return data
 
 
 # social login for flask using flask-dance

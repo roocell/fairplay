@@ -5,6 +5,7 @@ from flask import session
 from logger import log as log
 import json
 import commentjson
+from mypusher import notify_shared_users_of_game_change
 
 db = SQLAlchemy()
 
@@ -294,6 +295,12 @@ def db_set_game(user_id, game_id, shifts, roster):
         db.session.add(pr)
 
     db.session.commit()
+
+    # notify other shared users
+    # JS will update game on screen if it's actively open
+    gu = GameUsers.query.filter_by(game_id=game.id).all()
+    if len(gu) > 0:
+        notify_shared_users_of_game_change(game_id)
 
 # returns a list of games as a dict
 def db_get_games(user_id):

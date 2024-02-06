@@ -18,6 +18,7 @@ function onLoadMain()
   {
     updateDomWithDrawer();
   }
+  getconfig();
 }
 
 function onLoadRoster()
@@ -334,6 +335,14 @@ function updateDomShifts(mainpage, data)
     } else {
       shiftsrow2.appendChild(shiftdiv);
     }
+
+    // create a hidden DOM object that we can retrieve in JS
+    var current_game_id = document.createElement("input");
+    current_game_id.setAttribute("type", "hidden");
+    current_game_id.setAttribute("id", "current_game_id");
+    current_game_id.setAttribute("value", data["game_id"]);
+    shiftscontainer.appendChild(current_game_id);
+
   });
 }
 
